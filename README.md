@@ -2,9 +2,8 @@
 
 FORGE is a language and runtime workspace in Racket, Factor, Oberon-07, and ATS2, plus a raw x86-64 opcode image. A source module names types, functors, and a program. A functor has parameters, an executable body, and a proof clause for the same relation. The program binds constants, invokes a functor, and asserts a result. The closed profile stage 3 accepts is FORGE Core v1 in `spec/forge-core-v1.txt`: one unsigned 64-bit type, one binary multiplication functor, and one program with two constant bindings. `compiler/expand.rkt` emits textual IR. `backend/oberon/` prints x86-64 NASM. `runtime/forge/` is a Factor machine with registers, a data stack, and a heap. `proof/` describes a typed heap and does not prove that the Factor collector matches `tests/fixtures/`. `opcode-engine/` is a separate image of 25,377 instructions, a flat binary, a static ELF, and 278 checks.
 
-Copyright lines name ERRANT DIGITAL INSTITUTE OF TECHNOLOGY (SEIT NGO) and the SNAPKITTY COLLECTIVE, SPDX `AGPL-3.0-only OR LicenseRef-Commercial`. They point at `LICENSE-AGPL` and `LICENSE-COMMERCIAL`, which are not in the tree. `LICENSE` is the GNU Affero General Public License, version 3, 19 November 2007. `docs/stages-3-5.md` says the pipeline uses no Python, and there is no Python driver.
-
-This file replaces a 38-byte README, SHA-256 `f86a95661a4832af9c0332fb4498edb8ab5195dd3e53b06a614d937403bc0eee`, whose text was `# Forge-IR` and `FACTOR × RACKET × OBERON`.
+Copyright ERRANT DIGITAL INSTITUTE OF TECHNOLOGY (SEIT NGO) and the SNAPKITTY COLLECTIVE, SPDX `AGPL-3.0-only OR LicenseRef-Commercial`. They point at `LICENSE-AGPL` and `LICENSE-COMMERCIAL. `
+SHA-256 `f86a95661a4832af9c0332fb4498edb8ab5195dd3e53b06a614d937403bc0eee`, # Forge-IR` and `FACTOR × RACKET × OBERON`.
 
 ## Directory layout
 
@@ -47,7 +46,7 @@ tests/scripts/run-conformance.sh
 
 `source-test` runs `racket compiler/expand-tests.rkt`. `conformance` runs the shell script. `clean` deletes `module.fir`, `module.asm`, `module.o`, and `module-native`. The moved root names are `lexer.rkt`, `grammar.ebnf`, `vm.factor`, `runtime.factor`, and `forge_gc_kernel.dats`.
 
-## Paths left unchanged
+## Paths 
 
 `frontend/lexer.rkt` still requires `../syntax/lexer.rkt`, `../compiler/lower.rkt`, `syntax/tokens.rkt`, `test-lexer.rkt`, and the siblings of those paths. None of those modules are in the tree. From `frontend/`, `../syntax/` resolves outside the repository. Seven `#lang racket/base` forms mean the file is not one module. `grammar/grammar.ebnf` contains the same kind of require strings; they moved with the file.
 

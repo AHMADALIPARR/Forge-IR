@@ -1,0 +1,4 @@
+# Raw machine images. Mark them binary so Git does not treat them as
+# text (no CRLF conversion, no textual merge).
+opcode-engine/engine.bin binary
+opcode-engine/engine.elf binary

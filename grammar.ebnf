@@ -1,0 +1,1466 @@
+Copyright (C) 2026 ERRANT DIGITAL INSTITUTE OF TECHNOLOGY (SEIT NGO) % SNAPKITTY COLLECTIVE
+// SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Commercial
+// See LICENSE-AGPL and LICENSE-COMMERCIAL in this repository for license terms.
+
+program := module-decl type-section functor-section* program-decl
+module-decl := "MODULE" IDENT
+type-section := "TYPE" (type-def)+
+type-def := IDENT "=" "UNSIGNED" NUMBER
+functor := "FUNCTOR" IDENT accept* return? body
+accept := "ACCEPT" type-ident IDENT
+return := "RETURN" type-ident
+body := execute-block prove-block
+execute-block := "EXECUTE" statement* "END"
+prove-block := "PROVE" assertion* "END"
+statement := let-stmt | invoke-stmt | expr-into-stmt | assert-stmt
+let-stmt := "LET" IDENT "BE" expr
+invoke-stmt := "INVOKE" IDENT ("WITH" expr ("," expr)*)?
+assert-stmt := "ASSERT" expr
+expr-into := expr "INTO" target (target := "RESULT" | IDENT)
+expr := comparison
+comparison := additive (("EQUALS"|"NOT-EQUALS"|"LESS-THAN"|"GREATER-THAN") additive)?
+additive := multiplicative (("PLUS"|"MINUS") multiplicative)*
+multiplicative := primary (("TIMES"|"DIVIDED-BY"|"REMAINDER") primary)*
+primary := NUMBER | IDENT | "RESULT" | "(" expr ")"
+
+(forge-ir (version 1) (module Arithmetic)
+  (types (Word (unsigned 64)))
+  (functor Multiply ((a Word) (b Word)) Word
+    (exec
+      (into result (times (ref a) (ref b))))
+    (prove
+      (assert (equals result (times (ref a) (ref b))))))
+  (program Main
+    (let x (unsigned 64) (lit 12))
+    (let y (unsigned 64) (lit 8))
+    (invoke Multiply (ref x) (ref y))
+    (assert (equals result (lit 96)))))
+
+#lang racket/base
+(require "tokens.rkt" "diagnostics.rkt")
+(provide lex-source)
+
+(define (lex-source src)
+  (define pos 0) ... 
+
+#lang racket/base
+(provide (struct-out tok) keyword? keyword-list punctuation?)
+
+(struct tok (type lexeme line col span) #:transparent)
+
+(define keyword-list
+  '(MODULE TYPE FUNCTOR PROGRAM ACCEPT RETURN EXECUTE PROVE END
+    LET BE INVOKE WITH ASSERT INTO RESULT UNSIGNED BOOLEAN
+    EQUALS NOT-EQUALS LESS-THAN GREATER-THAN PLUS MINUS
+    TIMES DIVIDED-BY REMAINDER))
+
+(define keyword-table (for/hash ([k keyword-list]) (values k #t)))
+(define (keyword? s) (hash-ref keyword-table (string->symbol s) #f))
+
+#lang racket/base
+(provide (struct-out diag) diag-error? error->string)
+(struct diag (stage severity message line col span) #:transparent)
+(define (diag-error? d) (eq? (diag-severity d) 'error))
+(define (error->string d src-name)
+  (format "~a:~a:~a: ~a: ~a" src-name (diag-line d) (diag-col d) (diag-stage d) (diag-message d)))
+
+#lang racket/base
+(require "tokens.rkt" "diagnostics.rkt")
+(provide lex-source)
+
+;; returns (values (listof tok?) (listof diag?))
+(define (lex-source src)
+  (define len (string-length src))
+  (define (scan)
+    (let loop ([i 0] [line 1] [col 1] [acc '()])
+      ...))
+  ...)
+
+(define (lex-source src)
+  (define len (string-length src))
+  (define diags '())
+  (define (err msg i line col)
+    (set! diags (cons (diag 'lex 'error msg line col 1) diags)))
+  (define toks
+    (let loop ([i 0] [line 1] [col 1] [acc '()])
+      (cond
+        [(>= i len) (cons (tok 'EOF "" line col 0) (reverse acc))]
+        [else
+         (define c (string-ref src i))
+         (cond
+           [(char=? c #\newline)
+            (loop (add1 i) (add1 line) 1 acc)]
+           [(char-whitespace? c)
+            (loop (add1 i) line (add1 col) acc)]
+           [(char=? c #\#)
+            (let skip ([j i] [l line])
+              (cond [(or (>= j len) (char=? (string-ref src j) #\newline)) (loop j l 1 acc)]
+                    [else (skip (add1 j) l)]))]
+
+           [(char-numeric? c)
+            (let scan ([j i])
+              (if (and (< j len) (or (char-numeric? (string-ref src j))
+                                     (char=? (string-ref src j) #\_)))
+                  (scan (add1 j)) j))]
+
+(define productions
+  '((program MODULE IDENT type-section functor* program-section)
+    ...))
+(define (expected-first nt) ...)
+
+(struct ps (toks pos diags) #:transparent) ; mutable? use set! on a box
+
+(define (parse-tokens toks)
+  (define pos 0)
+  (define diags '())
+  (define (peek) (list-ref toks pos))
+  (define (advance!) (set! pos (add1 pos)))
+  ...
+(struct loc (line col) #:transparent) ; actually embed line/col directly in nodes
+
+(struct src-loc (line col span) #:transparent)
+(struct Program (module types functors main loc) ...)
+(struct TypeDef (name width loc))
+(struct Param (name type loc))
+(struct Functor (name params ret body prove loc))
+(struct NamedType (name loc))
+(struct UnsignedType (width loc))
+(struct BoolType (loc))
+(struct Let (name expr loc))
+(struct Invoke (name args loc))
+(struct Assert (expr loc))
+(struct ExprInto (expr target loc))
+(struct Num (value loc))
+(struct Ref (name loc))
+(struct ResultRef (loc))
+(struct Bin (op lhs rhs loc))
+(struct Cmp (op lhs rhs loc))
+
+#lang racket/base
+(require "syntax/lexer.rkt" ... )
+(define (compile-file path mode) ...)
+(command-line #:args (file . _) ...)
+
+(define args (vector->list (current-command-line-arguments)))
+
+MODULE Memory
+
+TYPE
+    Cell = UNSIGNED 8
+
+FUNCTOR Combine
+    ACCEPT Cell hi
+    ACCEPT Cell lo
+    RETURN Cell
+    EXECUTE
+        hi TIMES 2 PLUS lo INTO RESULT
+    END
+    PROVE
+        RESULT GREATER-THAN hi
+    END
+END
+
+MODULE Stacks
+
+TYPE
+    Item = UNSIGNED 32
+
+FUNCTOR Peek
+    ACCEPT Item top
+    RETURN Item
+    EXECUTE
+        top INTO RESULT
+    END
+    PROVE
+        RESULT EQUALS top
+    END
+END
+
+PROGRAM Main
+    LET a BE 7
+    INVOKE Peek WITH a
+    ASSERT RESULT EQUALS 7
+END
+#lang racket/base
+(provide (struct-out diag) diag-error? error->string)
+(struct diag (stage severity message line col span) #:transparent)
+(define (diag-error? d) (eq? (diag-severity d) 'error))
+(define (error->string d src)
+  (format "~a:~a:~a: [~a] ~a" src (diag-line d) (diag-col d) (diag-stage d) (diag-message d)))
+
+#lang racket/base
+(require "tokens.rkt" "diagnostics.rkt")
+(provide lex-source token-dump-line)
+
+(define (lex-source src)
+  (define len (string-length src))
+  (define diags '())
+  (define (add-diag! msg line col)
+    (set! diags (cons (diag 'lex 'error msg line col 1) diags)))
+  (define-values (toks-rev _l _c)
+    (let loop ([i 0] [line 1] [col 1] [acc '()])
+      (cond
+        [(>= i len) (values acc line col)]
+        [else
+         (define c (string-ref src i))
+         (cond
+           [(char=? c #\newline) (loop (add1 i) (add1 line) 1 acc)]
+           [(char-whitespace? c) (loop (add1 i) line (add1 col) acc)]
+           [(char=? c #\#)
+            (let skip ([j (add1 i)])
+              (cond
+                [(>= j len) (values acc line col)]
+                [(char=? (string-ref src j) #\newline) (loop j line col acc)]
+                [else (skip (add1 j))]))]
+
+       [(char-numeric? c)
+        (let scan ([j i])
+          (if (or (>= j len)
+                  (not (or (char-numeric? (string-ref src j))
+                           (char=? (string-ref src j) #\_))))
+              (begin
+                (define lex (substring src i j))
+                (loop j line (+ col (- j i))
+                      (cons (tok 'NUMBER lex line col (- j i)) acc)))
+              (scan (add1 j))))]
+       [(or (char-alphabetic? c) (char=? c #\_) (char=? c #\$))
+        (let scan ([j i])
+          (if (or (>= j len)
+                  (not (or (char-alphabetic? (string-ref src j))
+                           (char-numeric? (string-ref src j))
+                           (char=? (string-ref src j) #\_))))
+              (begin
+                (define lex (substring src i j))
+                (define sym (string->symbol lex))
+                (loop j line (+ col (- j i))
+                      (cons (tok (if (keyword? sym) sym 'IDENT) lex line col (- j i)) acc)))
+              (scan (add1 j))))]
+
+       [(char=? c #\,) (loop (add1 i) line (add1 col) (cons (tok 'COMMA "," line col 1) acc))]
+       [(char=? c #\() ...
+       [(char=? c #\)) ...
+       [(char=? c #\=) (loop ... 'EQSIGN "=" ...)]
+       [else (add-diag! (format "unexpected character '~a'" c) line col)
+             (values acc line col)])]))
+
+
+Hmm `(define-values (toks-rev _l _c) (let loop ...))` with named-let returning (values acc line col) — works since loop's body returns values in all branches? In numeric branch, `scan` inner returns loop's result via tail position — yes inside begin. In keyword branch same. OK. But `(define lex ...)` inside begin after an expression is invalid: (begin (define lex ...) (loop ...)) is allowed in Racket? Internal defines inside begin at expression level: yes, (begin (define x 1) x) is allowed in a body context. Inside let/cond branch which is a body context — allowed. To be safe, restructure: `(let ([lex (substring src i j)]) (loop j line (+ col (- j i)) (cons (tok ...) acc)))`. Safer. I'll do that everywhere.
+
+token-dump-line: (format "TOKEN ~a ~a:~a ~s" (tok-type t) (tok-line t) (tok-col t) (tok-lexeme t)).
+
+ast.rkt: structs + ast->sexpr + loc helpers.
+
+```racket
+#lang racket/base
+(provide (struct-out src-loc) (struct-out Program) ... ast->sexpr)
+
+(struct src-loc (line col span) #\:transparent)
+
+(struct Program (module types functors main loc) #\:transparent)
+(struct TypeDef (name width loc) #\:transparent)
+(struct NamedType (name loc) #\:transparent)
+(struct UnsignedT (width loc) #\:transparent)
+(struct BoolT (loc) #\:transparent)
+(struct Param (name type loc) #\:transparent)
+(struct Functor (name params ret body prove loc) #\:transparent)
+(struct Let (name expr loc) #\:transparent)
+(struct Invoke (name args loc) #\:transparent)
+(struct Assert (expr loc) #\:transparent)
+(struct ExprInto (expr target loc) #\:transparent)
+(struct Num (value loc) #\:transparent)
+(struct Ref (name loc) #\:transparent)
+(struct ResultRef (loc) #\:transparent)
+(struct Bin (op lhs rhs loc) #\:transparent)
+(struct Cmp (op lhs rhs loc) #\:transparent)
+
+#lang racket/base
+(provide forge-productions first-of)
+
+(define forge-productions
+  '([program ::= (module-decl type-section functor-section* program-section)]
+    [module-decl ::= (MODULE IDENT)]
+    ...))
+
+(define (first-of nt) ...) simple assoc of FIRST keyword sets for diagnostics:
+(define first-sets
+  '([statement . (LET INVOKE ASSERT NUMBER IDENT RESULT LPAREN)]
+    [expr . (NUMBER IDENT RESULT LPAREN)]))
+
+#lang racket/base
+(require "tokens.rkt" "ast.rkt" "diagnostics.rkt" "grammar.rkt")
+(provide parse-tokens)
+
+(define (parse-tokens toks)
+  (define n (length toks))
+  (define pos 0)
+  (define diags '())
+  (define (peek) (list-ref toks pos))
+  (define (at-end?) (>= pos n))
+  (define (advance!) (set! pos (add1 pos)))
+  (define (fail! msg)
+    (define t (peek))
+    (set! diags
+          (cons (diag 'parse 'error msg (tok-line t) (tok-col t) (tok-span t)) diags))
+    (set! pos n))
+  (define (check type msg)
+    (define t (peek))
+    (if (eq? (tok-type t) type)
+        (begin (advance!) t)
+        (begin (fail! msg) #f)))
+  ...
+
+(define (parse-program)
+  (define start (peek))
+  (and
+   (check 'MODULE "expected MODULE at start of file")
+   (let ([m (check 'IDENT "expected module name after MODULE")])
+     (and m
+          (let ([types (parse-type-section)]
+                [functors (parse-functors)]
+                [main (parse-program-section)])
+            (and types functors main
+                 (Program (string->symbol (tok-lexeme m)) types functors main
+                          (src-loc (tok-line start) (tok-col start) 0))))))))
+
+(define (parse-type-section)
+  (cond
+    [(eq? (tok-type (peek)) 'TYPE)
+     (advance!)
+     (let loop ([acc '()])
+       (if (eq? (tok-type (peek)) 'IDENT)
+           (let ([d (parse-type-def)])
+             (and d (loop (cons d acc))))
+           (reverse acc)))]
+    [else '()]))
+(define (parse-type-def)
+  (define start (peek))
+  (let ([name (check 'IDENT "expected type name in TYPE section")]
+        [eq (check 'EQSIGN "expected '=' after type name")]
+        [kw (check 'UNSIGNED "expected UNSIGNED in type definition")]
+        [w (check 'NUMBER "expected bit width after UNSIGNED")])
+    (and name eq kw w
+         (TypeDef (string->symbol (tok-lexeme name))
+                  (string->number (tok-lexeme w))
+                  (loc-of start)))))
+
+(let ([name (check 'IDENT "...")])
+  (and name
+       (let ([eq (check 'EQSIGN "...")])
+         (and eq ...))))
+
+(define (check type msg)
+  (cond
+    [(at-end?) #f]
+    [else (define t (peek))
+           (if (eq? (tok-type t) type)
+               (begin (advance!) t)
+               (begin (fail! msg) #f))]))
+
+(define (check type msg)
+  (if (at-end?) #f
+      (let ([t (peek)])
+        (if (eq? (tok-type t) type)
+            (begin (advance!) t)
+            (begin (fail! msg) #f)))))
+
+(define (parse-functors)
+  (let loop ([acc '()])
+    (if (eq? (tok-type (peek)) 'FUNCTOR)
+        (let ([f (parse-functor)])
+          (and f (loop (cons f acc))))
+        (reverse acc))))
+
+FUNCTOR IDENT accept* [RETURN type] EXECUTE stmts END PROVE asserts END
+(define (parse-type)
+  (define start (peek))
+  (let ([t (tok-type start)])
+    (cond
+      [(eq? t 'UNSIGNED)
+       (advance!)
+       (let ([w (check 'NUMBER "expected bit width after UNSIGNED")])
+         (and w (UnsignedT (string->number (tok-lexeme w)) (loc-of start))))]
+      [(eq? t 'BOOLEAN)
+       (advance!) (BoolT (loc-of start))]
+      [(eq? t 'IDENT)
+       (advance!) (NamedType (string->symbol (tok-lexeme start)) (loc-of start))]
+      [else (fail! "expected a type") #f])))
+
+(define (parse-stmts)
+  (let loop ([acc '()])
+    (define t (tok-type (peek)))
+    (cond
+      [(eq? t 'END) (advance!) (reverse acc)]
+      [(memq t '(LET INVOKE ASSERT NUMBER IDENT RESULT LPAREN))
+       (let ([s (parse-stmt)])
+         (and s (loop (cons s acc))))]
+      [else (fail! "expected a statement or END") #f])))
+
+LET: LET IDENT BE expr
+INVOKE: INVOKE IDENT [WITH expr (COMMA expr)*]
+ASSERT: ASSERT expr
+expr-stmt: expr, then if peek INTO: INTO target (RESULT|IDENT)
+
+(define (parse-expr)
+  (define start (peek))
+  (let ([l (parse-arith)])
+    (and l
+         (let ([op (case (tok-type (peek))
+                     [(EQUALS) 'EQUALS] [(NOT-EQUALS) 'NOT-EQUALS]
+                     [(LESS-THAN) 'LESS-THAN] [(GREATER-THAN) 'GREATER-THAN]
+                     [else #f])])
+           (if op
+               (begin (advance!)
+                      (let ([r (parse-arith)])
+                        (and r (Cmp op l r (loc-of start)))))
+               l)))))
+
+PROGRAM IDENT stmts END? 
+
+(define (parse-prove)
+  (define start (peek))
+  (and (check 'PROVE "expected PROVE section")
+       (let loop ([acc '()])
+         (cond
+           [(eq? (tok-type (peek)) 'END) (advance!) (reverse acc)]
+           [(memq (tok-type (peek)) '(NUMBER IDENT RESULT LPAREN))
+            (let ([e (parse-expr)])
+              (and e (loop (cons e acc))))]
+           [else (fail! "expected a contract expression or END") #f]))))
+
+(define (parse-functor)
+  (define start (peek))
+  (let ([kw (check 'FUNCTOR "expected FUNCTOR")]
+        [name (check 'IDENT "expected functor name")])
+    (and kw name
+         (let ([params (parse-accepts)])
+           (and params
+                (let ([ret (if (eq? (tok-type (peek)) 'RETURN)
+                               (begin (advance!) (parse-type))
+                               #f)])
+                  (and (or ret (not (tok-type (peek)) ...))
+
+(let* ([params (parse-accepts)]
+       [has-ret (eq? (tok-type (peek)) 'RETURN)]
+       [ret (if has-ret (begin (advance!) (parse-type)) #f)])
+  (and params (or (not has-ret) ret)
+       (let ([exec-kw (check 'EXECUTE "expected EXECUTE")])
+         (and exec-kw
+             (let ([body (parse-stmts)])
+               (and body
+                    (let ([prove (parse-prove)])
+                      (and prove
+                           (Functor (string->symbol (tok-lexeme name)) params ret body prove (loc-of start))))))))))
+
+(define (parse-accepts)
+  (let loop ([acc '()])
+    (if (eq? (tok-type (peek)) 'ACCEPT)
+        (begin (advance!)
+               (let ([ty (parse-type)])
+                 (and ty
+                      (let ([nm (check 'IDENT "expected parameter name")])
+                        (and nm (loop (cons (Param (string->symbol (tok-lexeme nm)) ty (loc-of nm)) acc)))))))
+        (reverse acc))))
+
+(define ast (parse-program))
+(cond
+  [(and (not ast) (empty? diags))
+   (set! diags (cons (diag 'parse 'error "unexpected end of input" 1 1 0) diags))]
+  [(and ast (not (eq? (tok-type (peek)) 'EOF)))
+   (fail! "unexpected tokens after end of program")])
+(values ast (reverse diags))
+
+(define (parse-let)
+  (define start (peek)) ; LET token
+  (advance!)
+  (let ([nm (check 'IDENT "expected name after LET")])
+    (and nm
+         (let ([be (check 'BE "expected BE after LET name")])
+           (and be
+                (let ([e (parse-expr)])
+                  (and e (Let (string->symbol (tok-lexeme nm)) e (loc-of start)))))))))
+
+(advance!) ; INVOKE
+(let ([nm (check 'IDENT "expected functor name after INVOKE")])
+  (and nm
+       (let ([args (if (eq? (tok-type (peek)) 'WITH)
+                       (begin (advance!) (parse-args))
+                       '())])
+         (and (or (not ...) args ...)
+
+(define (parse-args)
+  (define first (parse-expr))
+  (and first
+       (let loop ([acc (list first)])
+         (if (eq? (tok-type (peek)) 'COMMA)
+             (begin (advance!)
+                    (let ([e (parse-expr)])
+                      (and e (loop (cons e acc)))))
+             (reverse acc)))))
+(and nm
+     (if (eq? (tok-type (peek)) 'WITH)
+         (begin (advance!)
+                (let ([args (parse-args)])
+                  (and args (Invoke (string->symbol (tok-lexeme nm)) args (loc-of start)))))
+         (Invoke (string->symbol (tok-lexeme nm)) '() (loc-of start))))
+
+(define (parse-expr-stmt)
+  (define start (peek))
+  (let ([e (parse-expr)])
+    (and e
+         (if (eq? (tok-type (peek)) 'INTO)
+             (begin (advance!)
+                    (let ([tgt-t (peek)])
+                      (cond
+                        [(eq? (tok-type tgt-t) 'RESULT) (advance!) (ExprInto e 'result (loc-of start))]
+                        [(eq? (tok-type tgt-t) 'IDENT) (advance!) (ExprInto e (string->symbol (tok-lexeme tgt-t)) (loc-of start))]
+                        [else (fail! "expected RESULT or a name after INTO") #f])))
+             (fail! "expression statements must end with INTO") #f))))
+
+(define (parse-stmt)
+  (define tt (tok-type (peek)))
+  (cond
+    [(eq? tt 'LET) (parse-let)]
+    [(eq? tt 'INVOKE) (parse-invoke)]
+    [(eq? tt 'ASSERT) (parse-assert)]
+    [(memq tt '(NUMBER IDENT RESULT LPAREN)) (parse-expr-stmt)]
+    [else (fail! "expected a statement") #f]))
+
+#lang racket/base
+(require "ast.rkt" "../syntax/diagnostics.rkt" "../verifier/contracts.rkt")
+(provide analyze-program)
+
+(struct t-unsigned (width) #\:transparent)
+(struct t-bool () #\:transparent)
+
+(define (analyze-program ast)
+  ; returns (values info diags) info = (sem-info type-table functor-table expr-types)
+
+(define (analyze-program ast)
+  (define diags '())
+  (define (err stage msg loc)
+    (set! diags (cons (diag 'semantic 'error msg (src-loc-line loc) (src-loc-col loc) (src-loc-span loc)) diags)))
+
+(define (check-expr e env info)
+  (cond
+    [(Num? e) (hash-set! (sem-info-expr-types info) e (t-unsigned 64)) (t-unsigned 64)]
+    [(Ref? e)
+     (let ([ty (hash-ref env (Ref-name e) #f)])
+       (if ty (begin (hash-set! ... ) ty)
+           (begin (err ... (format "unknown name '~a'" (Ref-name e))) #f)))]
+    [(ResultRef? e) (handle result slot)]
+    [(Bin? e) ...]
+    [(Cmp? e) ...]))
+
+(struct ctx (env result-type result-set) #\:transparent) ; env symbol->type or #f for result-type = unset
+
+(define (unify-arith a-type a-node b-type b-node)
+  ; returns unified type or #f
+
+(define (unify t1 n1 t2 n2)
+  (cond
+    [(and (t-unsigned? t1) (t-unsigned? t2))
+     (cond
+       [(equal? t1 t2) t1]
+       [(and (Num? n1) (fits? (Num-value n1) (t-unsigned-width t2))) t2]
+       [(and (Num? n2) (fits? (Num-value n2) (t-unsigned-width t1))) t1]
+       [else #f])]
+    [else #f]))
+(struct sem-info (types functors exprs) #\:transparent)
+; types: hash symbol → t-unsigned width
+; functors: hash symbol → (sig name params(list of (name type)) ret-or-#f)
+
+#lang racket/base
+(require "../syntax/ast.rkt" "../syntax/diagnostics.rkt")
+(provide validate-prove)
+
+;; A PROVE clause is a static contract: every clause must be a
+;; comparison over assigned values. Returns #t or adds diagnostics via err callback.
+(define (validate-prove functor-name prove-exprs check-expr! err)
+  (let loop ([exprs prove-exprs] [ok #t])
+    (cond
+      [(null? exprs) ok]
+      [else
+       (define e (car exprs))
+       (cond
+         [(Cmp? e)
+          (define t1 (check-expr! (Cmp-lhs e)))
+          (define t2 (check-expr! (Cmp-rhs e)))
+          (loop (cdr exprs) (and ok t1 t2))]
+         [else (err (format "PROVE clause must be a comparison, got another expression") (node-loc e))
+               (loop (cdr exprs) #f)])])))
+
+#lang racket/base
+(require "../syntax/ast.rkt" "semantic.rkt")
+(provide generate-ir ir->string)
+
+#lang racket/base
+(require "syntax/lexer.rkt" "syntax/parser.rkt" "syntax/tokens.rkt"
+         "syntax/diagnostics.rkt" "syntax/ast.rkt"
+         "compiler/semantic.rkt" "compiler/ir.rkt")
+(require racket/pretty)
+
+(define (fail src diags)
+  (for ([d diags]) (displayln (error->string d src)))
+  (exit 1))
+
+(define (main)
+  (define args (vector->list (current-command-line-arguments)))
+  (define file #f) (define dump 'ir)
+  (let loop ([a args])
+    (cond
+      [(null? a) (void)]
+      [(and (equal? (car a) "--dump") (pair? (cdr a)))
+       (set! dump (string->symbol (cadr a))) (loop (cddr a))]
+      [(string-prefix? (car a) "--dump=")
+       (set! dump (string->symbol (substring (car a) 7))) (loop (cdr a))]
+      [else (set! file (car a)) (loop (cdr a))]))
+  (unless file (displayln "usage: racket forge.rkt FILE.forge [--dump tokens|ast|ir]") (exit 2))
+  (define src (file->string file))
+  (define-values (toks lex-diags) (lex-source src))
+  (cond
+    [(pair? lex-diags) (fail file lex-diags)]
+    [(eq? dump 'tokens)
+     (for ([t toks]) (displayln (token-dump-line t))) (exit 0)]
+    [else
+     (define-values (ast parse-diags) (parse-tokens toks))
+     (cond
+       [(pair? parse-diags) (fail file parse-diags)]
+       [(eq? dump 'ast) (displayln (pretty-format (ast->sexpr ast) #\:mode 'write))]
+       [else
+        (define-values (info sem-diags) (analyze-program ast))
+        (cond
+          [(pair? sem-diags) (fail file sem-diags)]
+          [else (displayln (pretty-format (generate-ir ast info) #\:mode 'write))])])]))
+(main)
+
+#lang racket/base
+(require "test-lexer.rkt" "test-parser.rkt" "test-semantic.rkt" "test-ir.rkt")
+(displayln "all forge tests passed")
+
+(define (ast->sexpr a)
+  (cond
+    [(Program? a) `(program ,(Program-module a)
+                            (types ,@(map ast->sexpr (Program-types a)))
+                            ,@(map ast->sexpr (Program-functors a))
+                            ,(ast->sexpr (Program-main a)))]
+    ...))
+
+FUNCTOR Multiply
+    ACCEPT Word a
+    ACCEPT Word b
+    RETURN Word
+
+    EXECUTE
+        a TIMES b INTO RESULT
+    END
+
+    PROVE
+        RESULT EQUALS a TIMES b
+    END
+END
+
+;; lower IR instruction lists for the Factor stack VM (Stage 3 target).
+;; Each instruction is (op . operands); stack-effect returns (in . out)
+(define (lower-expr e) ...)
+
+(define (lower-expr e)
+  (match e ...))
+
+(define (lower-expr e)
+  (define tag (car e))
+  (cond
+    [(eq? tag 'lit) (list (list 'push (cadr e)))]
+    [(eq? tag 'ref) (list (list 'load (cadr e)))]
+    [(eq? tag 'result) (list (list 'push-result))]
+
+wait (result) sexpr: I said `(result)`; (cdr e) '(). (list (list 'push-result)) fine but tag 'result.
+    [(eq? tag 'bin?)...]
+
+MODULE Memory
+
+TYPE
+    Cell = UNSIGNED 8
+
+FUNCTOR Combine
+    ACCEPT Cell hi
+    ACCEPT Cell lo
+    RETURN Cell
+
+    EXECUTE
+        hi TIMES 2 PLUS lo INTO RESULT
+    END
+
+    PROVE
+        RESULT GREATER-THAN lo
+    END
+END
+
+PROGRAM Main
+
+    LET hi BE 3
+    LET lo BE 4
+    INVOKE Combine WITH hi, lo
+    ASSERT RESULT GREATER-THAN 4
+
+END
+
+MODULE Memory
+
+TYPE
+    Cell = UNSIGNED 8
+
+FUNCTOR Combine
+    ACCEPT Cell hi
+    ACCEPT Cell lo
+    RETURN Cell
+
+    EXECUTE
+        hi TIMES 2 PLUS lo INTO RESULT
+    END
+
+    PROVE
+        RESULT GREATER-THAN lo
+    END
+END
+
+PROGRAM Main
+
+    LET hi BE 3
+    LET lo BE 4
+    INVOKE Combine WITH hi, lo
+    ASSERT RESULT GREATER-THAN 4
+
+END
+
+LET hi BE 3 AS Cell
+LET lo BE 4 AS Cell
+INVOKE Combine WITH hi, lo
+ASSERT RESULT GREATER-THAN lo
+
+MODULE Stacks
+
+TYPE
+    Item = UNSIGNED 32
+
+FUNCTOR Saturate
+    ACCEPT Item value
+    ACCEPT Item cap
+    RETURN Item
+
+    EXECUTE
+        value TIMES value INTO RESULT
+        RESULT MINUS cap INTO RESULT
+    END
+
+    PROVE
+        RESULT LESS-THAN value
+    END
+END
+
+#lang racket/base
+(require rackunit "../syntax/lexer.rkt" "../syntax/tokens.rkt")
+
+(define src "MODULE Arithmetic\nTYPE\n Word = UNSIGNED 64\n")
+(define-values (toks diags) (lex-source src))
+(check-equal? diags '())
+(check-eq? (tok-type (car toks)) 'MODULE)
+(check-equal? (tok-lexeme (list-ref toks 3)) "Word")
+(check-eq? (tok-type (list-ref toks 5)) 'UNSIGNED)
+
+#lang racket/base
+(require "../syntax/ast.rkt" "../syntax/diagnostics.rkt" "../verifier/contracts.rkt")
+(provide (struct-out t-unsigned) (struct-out t-bool) (struct-out sig)
+         (struct-out sem-info) analyze-program)
+
+(struct t-unsigned (width) #\:transparent)
+(struct t-bool () #\:transparent)
+(struct sig (name params ret) #\:transparent) ; params: (listof (list sym type)) ret: type or #f
+(struct sem-info (types functors exprs) #\:transparent)
+
+(define (analyze-program ast)
+  (define diags '())
+  (define (err! msg loc)
+    (set! diags (cons (diag 'semantic 'error msg (src-loc-line loc) (src-loc-col loc) (src-loc-span loc)) diags)))
+  (define types (make-hash))
+  (define functors (make-hash))
+  (define exprs (make-hasheq))
+  (define info (sem-info types functors exprs))
+
+  (define (resolve-type t)
+    (cond
+      [(NamedType? t)
+       (hash-ref types (NamedType-name t)
+                 (lambda () (err! (format "unknown type '~a'" (NamedType-name t)) (NamedType-loc t)) #f))]
+      [(UnsignedT? t)
+       (define w (UnsignedT-width t))
+       (if (exact-positive-integer? w) ... (<= w 64) → (t-unsigned w) else err #f)]
+      [(BoolT? t) (t-bool)]
+      [else #f]))
+
+  ;; pass 1: type defs
+  (for ([td (Program-types ast)])
+    (define w (TypeDef-width td))
+    (cond
+      [(not (and (exact-positive-integer? w) (<= w 64)))
+       (err! (format "type '~a' has invalid width ~a (must be 1..64)" (TypeDef-name td) w) (TypeDef-loc td))]
+      [(hash-ref types (TypeDef-name td) #f)
+       (err! (format "duplicate type '~a'" (TypeDef-name td)) (TypeDef-loc td))]
+      [else (hash-set! types (TypeDef-name td) (t-unsigned w))]))
+
+  (define (fits? v w) (< v (expt 2 w)))
+
+  (define (unify t1 n1 t2 n2)
+    (cond
+      [(not t1) #f] [(not t2) #f]
+      [(and (t-unsigned? t1) (t-unsigned? t2))
+       (cond
+         [(equal? t1 t2) t1]
+         [(and (Num? n1) (fits? (Num-value n1) (t-unsigned-width t2))) t2]
+         [(and (Num? n2) (fits? (Num-value n2) (t-unsigned-width t1))) t1]
+         [else #f])]
+      [(and (t-bool? t1) (t-bool? t2)) t1]
+      [else #f]))
+
+  ;; pass 2: functor signatures
+  (for ([f (Program-functors ast)])
+    (cond
+      [(hash-ref functors (Functor-name f) #f)
+       (err! (format "duplicate functor '~a'" (Functor-name f)) (Functor-loc f))]
+      [else
+       (define params
+         (for/list ([p (Functor-params f)]) (list (Param-name p) (resolve-type p.type) p)))
+
+
+       (define seen (make-hash))
+       (define params
+         (for/list ([p (Functor-params f)])
+           (when (hash-ref seen (Param-name p) #f)
+             (err! (format "duplicate parameter '~a' in functor '~a'" (Param-name p) (Functor-name f)) (Param-loc p)))
+           (hash-set! seen (Param-name p) #t)
+           (list (Param-name p) (resolve-type (Param-type p)))))
+       (define ret (and (Functor-ret f) (resolve-type (Functor-ret f))))
+       (hash-set! functors (Functor-name f) (sig (Functor-name f) params ret))]))
+
+  (struct ctx (env result-type result-set) #\:transparent)
+
+  (define (check-expr! e c)
+    (define (record! t) (hash-set! exprs e t) t)
+    (cond
+      [(Num? e) (record! (t-unsigned 64))]
+      [(Ref? e)
+       (define t (hash-ref (ctx-env c) (Ref-name e) #f))
+       (if t (record! t) (begin (err! (format "unknown name '~a'" (Ref-name e)) (Ref-loc e)) #f))]
+      [(ResultRef? e)
+       (cond
+         [(not (ctx-result-type c))
+          (err! "RESULT is not available in this context" (ResultRef-loc e)) #f]
+         [(not (ctx-result-set c))
+          (err! "RESULT is read before it is assigned" (ResultRef-loc e)) #f]
+         [else (record! (ctx-result-type c))])]
+      [(Bin? e)
+       (define t1 (check-expr! (Bin-lhs e) c))
+       (define t2 (check-expr! (Bin-rhs e) c))
+       (define u (unify t1 (Bin-lhs e) t2 (Bin-rhs e)))
+       (if u (record! u)
+           (begin
+             (when (and t1 t2)
+               (err! (format "operand types do not match for ~a" (Bin-op e)) (Bin-loc e)))
+             #f))]
+      [(Cmp? e)
+       (define t1 (check-expr! (Cmp-lhs e) c))
+       (define t2 (check-expr! (Cmp-rhs e) c))
+       (define u (unify t1 (Cmp-lhs e) t2 (Cmp-rhs e)))
+       (if u (record! (t-bool)) (begin (when (and t1 t2) (err! ...)) #f))]
+      [else #f]))
+
+  (define (check-stmt! s c)
+    ;; returns updated ctx or #f
+    (cond
+      [(Let? s)
+       (when (hash-ref (ctx-env c) (Let-name s) #f)
+         (err! (format "name '~a' is already defined" (Let-name s)) (Let-loc s)))
+       (define t (check-expr! (Let-expr s) c))
+       (cond
+         [(Let-type s)
+          (define dt (resolve-type (Let-type s)))
+          (cond
+            [(not dt) #f]
+            [(and t (unify dt #f t #f) (equal? (unify dt (Let-expr s) t (Let-expr s)) dt))
+             (hash-set! (ctx-env c) (Let-name s) dt) c]
+            [else (err! (format "declared type of '~a' does not match expression" (Let-name s)) (Let-loc s)) #f])]
+         [(and t (not (hash-ref (ctx-env c) (Let-name s) #f)))
+          (hash-set! (ctx-env c) (Let-name s) t) c]
+         [else #f])]
+
+[(Let-type s)
+ (define dt (resolve-type (Let-type s)))
+ (define u (and dt t (unify t (Let-expr s) dt (Let-expr s))))
+ (cond
+   [(and u (equal? u dt)) (hash-set! (ctx-env c) (Let-name s) dt) c]
+   [else (err! ...) #f])]
+
+      [(Invoke? s)
+       (define g (hash-ref functors (Invoke-name s) #f))
+       (cond
+         [(not g) (err! (format "unknown functor '~a'" (Invoke-name s)) (Invoke-loc s)) #f]
+         [else
+          (define params (sig-params g))
+          (define args (Invoke-args s))
+          (cond
+            [(not (= (length params) (length args)))
+             (err! (format "functor '~a' expects ~a arguments, got ~a"
+                           (Invoke-name s) (length params) (length args)) (Invoke-loc s)) #f]
+            [else
+             (define ok? #t)
+             (for ([p params] [a args])
+               (define at (check-expr! a c))
+               (define u (unify at a (cadr p) a))
+               (unless (equal? u (cadr p))
+                 (set! ok? #f)
+                 (err! (format "argument '~a' does not match parameter type" ...?) (node-loc a))))
+
+             (if ok?
+                 (ctx (ctx-env c) (sig-ret g) #t)
+                 #f)]
+
+      [(Assert? s)
+       (define t (check-expr! (Assert-expr s) c))
+       (if (and t (t-bool? t)) c
+           (begin (when t (err! "ASSERT requires a comparison" (Assert-loc s))) #f))]
+
+      [(ExprInto? s)
+       (define t (check-expr! (ExprInto-expr s) c))
+       (cond
+         [(eq? (ExprInto-target s) 'result)
+          (cond
+            [(not (ctx-result-type c))
+             (err! "INTO RESULT is not allowed here (no declared result)" (ExprInto-loc s)) #f]
+            [else
+             (define u (and t (unify t (ExprInto-expr s) (ctx-result-type c) (ExprInto-expr s))))
+
+             (if (and u (equal? u (ctx-result-type c)))
+                 (ctx (ctx-env c) (ctx-result-type c) #t)
+                 (begin (when t (err! "expression type does not match result type" (ExprInto-loc s))) #f))])]
+         [else
+          (define vt (hash-ref (ctx-env c) (ExprInto-target s) #f))
+          (cond
+            [(not vt) (err! (format "unknown name '~a' in INTO" (ExprInto-target s)) (ExprInto-loc s)) #f]
+            [else
+             (define u (and t (unify t (ExprInto-expr s) vt (ExprInto-expr s))))
+             (if (and u (equal? u vt)) c
+                 (begin (when t (err! (format "expression type does not match type of '~a'" (ExprInto-target s)) (ExprInto-loc s))) #f))])])]))
+
+  (define (check-functor! f)
+    (define g (hash-ref functors (Functor-name f))) ; exists (set in pass 2)
+    (define env (make-hash))
+    (for ([p (sig-params g)]) (hash-set! env (car p) (cadr p)))
+    (define c0 (ctx 'functor env (sig-ret g) #f))
+    (define c (check-seq! (Functor-body f) c0))
+    (when c
+      (when (and (sig-ret g) (not (ctx-result-set c)))
+        (err! (format "functor '~a' declares RETURN but never assigns RESULT" (Functor-name f)) (Functor-loc f)))
+      ;; PROVE contracts
+      (define penv (make-hash))
+      (for ([p (sig-params g)]) (hash-set! penv (car p) (cadr p)))
+      (define pc (ctx 'prove penv (sig-ret g) (ctx-result-set c)))
+      (validate-prove (Functor-name f) (Functor-prove f)
+                      (lambda (e) (check-expr! e pc))
+                      (lambda (msg loc) (err! msg loc)))))
+
+
+  (define (check-seq! stmts c)
+    (let loop ([ss stmts] [c c])
+      (cond
+        [(null? ss) c]
+        [else (define c2 (check-stmt! (car ss) c))
+               (loop (cdr ss) (and c c2))])))
+
+(define (check-seq! stmts c0)
+  (define ok #t)
+  (let loop ([ss stmts] [c c0])
+    (cond
+      [(null? ss) (and ok c)]
+      [else
+       (define c2 (check-stmt! (car ss) c))
+       (when (not c2) (set! ok #f))
+       (loop (cdr ss) (or c2 c))]))
+
+  (define (check-program! m)
+    (define env (make-hash))
+    (define c (check-seq! (Main-body m) (ctx 'program env #f #f)))
+    c)
+
+  (for ([f (Program-functors ast)]) (check-functor! f))
+  (check-program! (Program-main ast))
+  (values info (reverse diags)))
+
+#lang racket/base
+(require "../syntax/ast.rkt" "../syntax/diagnostics.rkt")
+(provide validate-prove expr-contains-result?)
+
+(define (expr-contains-result? e)
+  (cond
+    [(ResultRef? e) #t]
+    [(Bin? e) (or (expr-contains-result? (Bin-lhs e)) (expr-contains-result? (Bin-rhs e)))]
+    [(Cmp? e) (or (expr-contains-result? (Cmp-lhs e)) (expr-contains-result? (Cmp-rhs e)))]
+    [(Num? e) #f]
+    [(Ref? e) #f]
+    [else #f]))
+
+;; validate-prove : functor-name exprs check-expr! err! -> boolean
+(define (validate-prove fname exprs check-expr! err!)
+  (let loop ([es exprs] [ok #t])
+    (cond
+      [(null? es) ok]
+      [else
+       (define e (car es))
+       (cond
+         [(not (Cmp? e))
+          (err! (format "PROVE clause in '~a' must be a comparison" fname) (node-loc e))
+          (loop (cdr es) #f)]
+         [(not (expr-contains-result? e))
+          (err! (format "PROVE clause in '~a' must mention RESULT" fname) (node-loc e))
+          (loop (cdr es) #f)]
+         [else
+          (define t (check-expr! e))
+          (loop (cdr es) (and ok (not (not t))))])])))
+
+(define (node-loc e)
+  (cond
+    [(Num? e) (Num-loc e)]
+    [(Ref? e) (Ref-loc e)]
+    [(ResultRef? e) (ResultRef-loc e)]
+    [(Bin? e) (Bin-loc e)]
+    [(Cmp? e) (Cmp-loc e)]
+    [else (src-loc 0 0 0)]))
+
+#lang racket/base
+(require racket/pretty)
+(require "../syntax/ast.rkt" "semantic.rkt")
+(provide generate-ir ir->string (struct-out t-unsigned)? no, semantic provides)
+
+(define (type-sexpr t)
+  (cond
+    [(t-unsigned? t) `(unsigned ,(t-unsigned-width t))]
+    [(t-bool? t) '(bool)]
+    [else '(unknown)]))
+
+(define (loc-sexpr l) `(at ,(src-loc-line l) ,(src-loc-col l)))
+
+(define (op-sexpr op) op) ; EQUALS -> equals? 
+
+Map: EQUALS→'equals NOT-EQUALS→'not-equals LESS-THAN→'less-than GREATER-THAN→'greater-than TIMES→'times DIVIDED-BY→'divided-by REMAINDER→'remainder PLUS→'plus MINUS→'minus.
+
+(define (map-op op)
+  (case op
+    [(EQUALS) 'equals] [(NOT-EQUALS) 'not-equals]
+    [(LESS-THAN) 'less-than] [(GREATER-THAN) 'greater-than]
+    [(TIMES) 'times] [(DIVIDED-BY) 'divided-by] [(REMAINDER) 'remainder]
+    [(PLUS) 'plus] [(MINUS) 'minus] [else op]))
+
+(define (expr-sexpr e info)
+  (cond
+    [(Num? e) `(lit ,(Num-value e) ,(loc-sexpr (Num-loc e)))]
+    [(Ref? e) `(ref ,(Ref-name e) ,(loc-sexpr (Ref-loc e)))]
+    [(ResultRef? e) `(result ,(loc-sexpr (ResultRef-loc e)))]
+    [(Bin? e) `(,(map-op (Bin-op e)) ,(expr-sexpr (Bin-lhs e) info) ,(expr-sexpr (Bin-rhs e) info) ,(loc-sexpr (Bin-loc e)))]
+    [(Cmp? e) `(,(map-op (Cmp-op e)) ,(expr-sexpr (Cmp-lhs e) info) ,(expr-sexpr (Cmp-rhs e) info) ,(loc-sexpr (Cmp-loc e)))]))
+
+(define (stmt-sexpr s info)
+  (cond
+    [(Let? s) `(let ,(Let-name s) ,(type-sexpr (hash-ref (sem-info-exprs info) (Let-expr s) #f)) ,(expr-sexpr (Let-expr s) info) ,(loc-sexpr (Let-loc s)))]
+
+[(Invoke? s) `(invoke ,(Invoke-name s) ,@(map (lambda (a) (expr-sexpr a info)) (Invoke-args s)) ,(loc-sexpr (Invoke-loc s)))]
+[(Assert? s) `(assert ,(expr-sexpr (Assert-expr s) info) ,(loc-sexpr (Assert-loc s)))]
+[(ExprInto? s) `(into ,(ExprInto-target s) ,(expr-sexpr (ExprInto-expr s) info) ,(loc-sexpr (ExprInto-loc s)))]))
+
+#lang racket/base
+(require racket/pretty)
+(require "../syntax/ast.rkt" "semantic.rkt")
+(provide generate-ir ir->string (struct-out t-unsigned)? no, semantic provides)
+
+(define (type-sexpr t)
+  (cond
+    [(t-unsigned? t) `(unsigned ,(t-unsigned-width t))]
+    [(t-bool? t) '(bool)]
+    [else '(unknown)]))
+
+(define (loc-sexpr l) `(at ,(src-loc-line l) ,(src-loc-col l)))
+
+(define (op-sexpr op) op) ; EQUALS -> equals? 
+
+Map: EQUALS→'equals NOT-EQUALS→'not-equals LESS-THAN→'less-than GREATER-THAN→'greater-than TIMES→'times DIVIDED-BY→'divided-by REMAINDER→'remainder PLUS→'plus MINUS→'minus.
+
+(define (map-op op)
+  (case op
+    [(EQUALS) 'equals] [(NOT-EQUALS) 'not-equals]
+    [(LESS-THAN) 'less-than] [(GREATER-THAN) 'greater-than]
+    [(TIMES) 'times] [(DIVIDED-BY) 'divided-by] [(REMAINDER) 'remainder]
+    [(PLUS) 'plus] [(MINUS) 'minus] [else op]))
+
+(define (expr-sexpr e info)
+  (cond
+    [(Num? e) `(lit ,(Num-value e) ,(loc-sexpr (Num-loc e)))]
+    [(Ref? e) `(ref ,(Ref-name e) ,(loc-sexpr (Ref-loc e)))]
+    [(ResultRef? e) `(result ,(loc-sexpr (ResultRef-loc e)))]
+    [(Bin? e) `(,(map-op (Bin-op e)) ,(expr-sexpr (Bin-lhs e) info) ,(expr-sexpr (Bin-rhs e) info) ,(loc-sexpr (Bin-loc e)))]
+    [(Cmp? e) `(,(map-op (Cmp-op e)) ,(expr-sexpr (Cmp-lhs e) info) ,(expr-sexpr (Cmp-rhs e) info) ,(loc-sexpr (Cmp-loc e)))]))
+
+(define (stmt-sexpr s info)
+  (cond
+    [(Let? s) `(let ,(Let-name s) ,(type-sexpr (hash-ref (sem-info-exprs info) (Let-expr s) #f)) ,(expr-sexpr (Let-expr s) info) ,(loc-sexpr (Let-loc s)))]
+
+[(Invoke? s) `(invoke ,(Invoke-name s) ,@(map (lambda (a) (expr-sexpr a info)) (Invoke-args s)) ,(loc-sexpr (Invoke-loc s)))]
+[(Assert? s) `(assert ,(expr-sexpr (Assert-expr s) info) ,(loc-sexpr (Assert-loc s)))]
+[(ExprInto? s) `(into ,(ExprInto-target s) ,(expr-sexpr (ExprInto-expr s) info) ,(loc-sexpr (ExprInto-loc s)))]))
+
+(define (param-type-sexpr p) ; p = (list name type)
+  `(,(car p) ,(type-sexpr (cadr p))))
+
+(define (functor-sexpr f info)
+  (define g (hash-ref (sem-info-functors info) (Functor-name f)))
+  `(functor ,(Functor-name f)
+            (params ,@(map param-type-sexpr (sig-params g)))
+            ,(if (sig-ret g) (type-sexpr (sig-ret g)) '(void))
+            (exec ,@(map (lambda (s) (stmt-sexpr s info)) (Functor-body f)))
+            (prove ,@(map (lambda (e) (expr-sexpr e info)) (Functor-prove f)))))
+
+(define (generate-ir ast info)
+  `(forge-ir
+    (version 1)
+    (module ,(Program-module ast))
+    (types ,@(map (lambda (td) `(,(TypeDef-name td) (unsigned ,(TypeDef-width td)))) (Program-types ast)))
+    ,@(map (lambda (f) (functor-sexpr f info)) (Program-functors ast))
+    (program ,(Main-name (Program-main ast))
+             ,@(map (lambda (s) (stmt-sexpr s info)) (Main-body (Program-main ast))))))
+
+(define (ir->string ir) (pretty-format ir #\:mode 'write))
+
+#lang racket/base
+(provide lower-ir stack-effect)
+
+;; lower canonical IR to linear stack instructions for the Factor VM.
+;; instruction: (list op operand ...)
+;; (stack-effect instr) = (cons in-count out-count)
+
+(define (lower-expr e)
+  (define tag (car e))
+  (define loc (let ([n (reverse (cdr e))]) 'skip)) ; ignore
+  (cond
+    [(eq? tag 'lit) (list (list 'push (cadr e)))]
+    [(eq? tag 'ref) (list (list 'load (cadr e)))]
+    [(eq? tag 'result) (list (list 'load-result))]
+    [(memq tag '(times divided-by remainder plus minus equals not-equals less-than greater-than))
+     (append (lower-expr (cadr e))
+             (lower-expr (caddr e))
+             (list (list 'op tag)))]
+    [else (error 'lower-ir "unknown IR expression ~s" e)]))
+
+(define (lower-stmt s)
+  (define tag (car s))
+  (case tag
+    [(let) (append (lower-expr (list-ref s 3)) (list (list 'store (list-ref s 1)))]
+    [(invoke) (append (append-map lower-expr (cddr s)) ...)] 
+
+(define (payload s) (reverse (cdr (reverse (cdr s)))))
+
+(define (lower-stmt s)
+  (define tag (car s))
+  (define p (payload s))
+  (cond
+    [(eq? tag 'let) (append (lower-expr (list-ref p 2)) (list (list 'store (list-ref p 0))))]
+    [(eq? tag 'invoke)
+     (append (apply append (map lower-expr (cdr p)))
+             (list (list 'invoke (car p) (length (cdr p)))))]
+    [(eq? tag 'assert)
+     (append (lower-expr (car p)) (list (list 'assert)))]
+    [(eq? tag 'into)
+     (append (lower-expr (list-ref p 1))
+             (list (list 'store (list-ref p 0))))]
+    [else (error 'lower-ir "unknown statement ~s" s)]))
+
+(define (lower-ir ir)
+  (define functors
+    (filter (lambda (x) (and (pair? x) (eq? (car x) 'functor))) (cdddr ir)))
+
+  (define (body-of sec) (cdr (memq 'exec sec))) hmm (exec stmt...) inside functor sexpr: functor = (functor name (params...) type (exec ...) (prove ...)). find (exec ...) via assoc-like: (define (find-sec name f) (find (lambda (x) (and (pair? x) (eq? (car x) name))) f)).
+  flatten:
+  (define instrs
+    (append
+     (apply append
+            (for/list ([f functors])
+              (apply append (map lower-stmt (cdr (find-sec 'exec f))))))
+     (apply append
+            (map lower-stmt (cdr (find (find-sec...)... program: (program Main stmt...) → (cdr program-sec))))))
+  instrs)
+
+stack-effect:
+
+(define (stack-effect i)
+  (case (car i)
+    [(push load load-result) '(0 . 1)]
+    [(store assert) '(1 . 0)]
+    [(op) '(2 . 1)]
+    [(invoke) (cons (list-ref i 2) 1)]
+    [else (error 'stack-effect "unknown instruction ~s" i)]))
+
+(define (parse-main)
+  (define start (peek))
+  (let ([kw (check 'PROGRAM "expected PROGRAM section")]
+        [nm (check 'IDENT "expected program name")])
+    (and kw nm
+         (let ([body (parse-stmts)])
+           (and body (Main (string->symbol (tok-lexeme nm)) body (loc-of start)))))))
+
+(define (parse-tokens toks)
+  ...defs...
+  (define ast (parse-program))
+  (define (finish)
+    (cond
+      [(and ast (eq? (tok-type (peek)) 'EOF))
+       (values ast (reverse diags))]
+      [(and ast (not (eq? (tok-type (peek)) 'EOF)))
+       (fail! "unexpected tokens after end of program")
+       (values #f (reverse diags))]
+      [(null? diags)
+       (set! diags (cons (diag 'parse 'error "unexpected end of input" 1 1 0) diags))
+       (values #f (reverse diags))]
+      [else (values #f (reverse diags))]))
+  (finish))
+
+(define eof-line (if (null? toks-rev) 1 (tok-line (car toks-rev))))
+(define toks (reverse (cons (tok 'EOF "" eof-line 1 0) toks-rev)))
+
+GREATER-THAN LESS-THAN 6 (lowest, nonassoc)
+EQUALS NOT-EQUALS 6
+PLUS MINUS 7
+TIMES DIVIDED-BY REMAINDER 8 (highest)
+
+(define (parse-let)
+  (define start (peek))
+  (advance!)
+  (let ([nm (check 'IDENT "expected name after LET")])
+    (and nm
+         (let ([be (check 'BE "expected BE after LET name")])
+           (and be
+                (let ([e (parse-expr)])
+                  (and e
+                       (let ([ty (if (eq? (tok-type (peek)) 'AS)
+                                     (begin (advance!) (parse-type))
+                                     #f)])
+                         (and (or (not ty) ty)
+                              (Let (string->symbol (tok-lexeme nm)) ty e (loc-of start)))))))))))
+
+(define (analyze src)
+  (define-values (toks ld) (lex-source src))
+  (define-values (ast pd) (parse-tokens toks))
+  (check-equal? (append ld pd) '())
+  (analyze-program ast))
+
+#lang racket/base
+(require "tokens.rkt" "diagnostics.rkt")
+(provide lex-source token-dump-line)
+
+;; Native FORGE lexer. Hand-written scanner: no regular expressions,
+;; character-by-character with line/column tracking.
+
+(define (token-dump-line t)
+  (format "TOKEN ~a ~a:~a ~s" (tok-type t) (tok-line t) (tok-col t) (tok-lexeme t)))
+
+(define (lex-source src)
+  (define len (string-length src))
+  (define diags '())
+  (define (add-diag! msg line col)
+    (set! diags (cons (diag 'lex 'error msg line col 1) diags)))
+  (define-values (toks-rev _line _col)
+    (let loop ([i 0] [line 1] [col 1] [acc '()])
+      (cond
+        [(>= i len) (values acc line col)]
+        [else
+         (define c (string-ref src i))
+         (cond
+           [(char=? c #\newline) (loop (add1 i) (add1 line) 1 acc)]
+           [(char-whitespace? c) (loop (add1 i) line (add1 col) acc)]
+           [(char=? c #\#)
+            (let skip ([j (add1 i)])
+              (cond
+                [(>= j len) (values acc line col)]
+                [(char=? (string-ref src j) #\newline) (loop j line col acc)]
+                [else (skip (add1 j))]))]
+           [(char-numeric? c)
+            (let scan ([j i])
+              (if (or (>= j len)
+                      (not (or (char-numeric? (string-ref src j))
+                               (char=? (string-ref src j) #\_))))
+                  (let ([lex (substring src i j)])
+                    (loop j line (+ col (- j i))
+                          (cons (tok 'NUMBER lex line col (- j i)) acc)))
+                  (scan (add1 j))))]
+           [(or (char-alphabetic? c) (char=? c #\_))
+            (let scan ([j i])
+              (if (or (>= j len)
+                      (not (or (char-alphabetic? (string-ref src j))
+                               (char-numeric? (string-ref src j))
+                               (char=? (string-ref src j) #\_))))
+                  (let* ([lex (substring src i j)]
+                         [sym (string->symbol lex)]
+                         [type (if (keyword? sym) sym 'IDENT)])
+                    (loop j line (+ col (- j i))
+                          (cons (tok type lex line col (- j i)) acc)))
+                  (scan (add1 j))))]
+           [(char=? c #\,) (loop (add1 i) line (add1 col) (cons (tok 'COMMA "," line col 1) acc))]
+           [(char=? c #\() (loop (add1 i) line (add1 col) (cons (tok 'LPAREN "(" line col 1) acc))]
+           [(char=? c #\)) (loop (add1 i) line (add1 col) (cons (tok 'RPAREN ")" line col 1) acc))]
+           [(char=? c #\=) (loop (add1 i) line (add1 col) (cons (tok 'EQSIGN "=" line col 1) acc))]
+           [else
+            (add-diag! (format "unexpected character '~a'" c) line col)
+            (values acc line col)])])))
+  (define eof-line (if (null? toks-rev) 1 (tok-line (car toks-rev))))
+  (define eof-col (if (null? toks-rev) 1 (tok-col (car toks-rev))))
+  (define toks (reverse (cons (tok 'EOF "" eof-line eof-col 0) toks-rev)))
+  (values toks diags))
+
+#lang racket/base
+(provide (struct-out tok) forge-keyword? forge-keywords punctuation-token?)
+
+(struct tok (type lexeme line col span) #\:transparent)
+
+(define forge-keywords
+  '(MODULE TYPE FUNCTOR PROGRAM ACCEPT RETURN EXECUTE PROVE END
+    LET BE AS INVOKE WITH ASSERT INTO RESULT
+    UNSIGNED BOOLEAN
+    EQUALS NOT-EQUALS LESS-THAN GREATER-THAN
+    TIMES DIVIDED-BY REMAINDER PLUS MINUS))
+
+(define keyword-table
+  (let ([h (make-hash)])
+    (for ([k forge-keywords]) (hash-set! h k #t))
+    h))
+
+(define (forge-keyword? s) (if (hash-ref keyword-table s #f) #t #f))
+(define (punctuation-token? t) (memq t '(COMMA LPAREN RPAREN EQSIGN EOF)))
+
+#lang racket/base
+(provide (struct-out diag) diag-error? error->string)
+
+(struct diag (stage severity message line col span) #\:transparent)
+
+(define (diag-error? d) (eq? (diag-severity d) 'error))
+
+(define (error->string d src)
+  (format "~a:~a:~a: [~a] ~a"
+          src (diag-line d) (diag-col d) (diag-stage d) (diag-message d)))
+
+#lang racket/base
+(provide (struct-out src-loc)
+         (struct-out Program) (struct-out TypeDef) (struct-out Main)
+         (struct-out NamedType) (struct-out UnsignedT) (struct-out BoolT)
+         (struct-out Param) (struct-out Functor)
+         (struct-out Let) (struct-out Invoke) (struct-out Assert) (struct-out ExprInto)
+         (struct-out Num) (struct-out Ref) (struct-out ResultRef)
+         (struct-out Bin) (struct-out Cmp)
+         node-loc ast->sexpr)
+
+(struct src-loc (line col span) #\:transparent)
+
+(struct Program (module types functors main loc) #\:transparent)
+(struct TypeDef (name width loc) #\:transparent)
+(struct Main (name body loc) #\:transparent)
+
+(struct NamedType (name loc) #\:transparent)
+(struct UnsignedT (width loc) #\:transparent)
+(struct BoolT (loc) #\:transparent)
+
+(struct Param (name type loc) #\:transparent)
+(struct Functor (name params ret body prove loc) #\:transparent)
+
+(struct Let (name type expr loc) #\:transparent)
+(struct Invoke (name args loc) #\:transparent)
+(struct Assert (expr loc) #\:transparent)
+(struct ExprInto (expr target loc) #\:transparent)
+
+(struct Num (value loc) #\:transparent)
+(struct Ref (name loc) #\:transparent)
+(struct ResultRef (loc) #\:transparent)
+(struct Bin (op lhs rhs loc) #\:transparent)
+(struct Cmp (op lhs rhs loc) #\:transparent)
+
+(define (node-loc e) ...)
+
+(define (ast->sexpr a) ...)
+
+(define (t->s t)
+  (cond
+    [(NamedType? t) `(type ,(NamedType-name t))]
+    [(UnsignedT? t) `(unsigned ,(UnsignedT-width t))]
+    [(BoolT? t) '(bool)]))
+
+(define (e->s e)
+  (cond
+    [(Num? e) `(lit ,(Num-value e))]
+    [(Ref? e) `(ref ,(Ref-name e))]
+    [(ResultRef? e) '(result)]
+    [(Bin? e) `(,(Bin-op e) ,(e->s (Bin-lhs e)) ,(e->s (Bin-rhs e)))]
+    [(Cmp? e) `(,(Cmp-op e) ,(e->s (Cmp-lhs e)) ,(e->s (Cmp-rhs e)))]))
+
+(define (s->s s)
+  (cond
+    [(Let? s) `(let ,(Let-name s) ,(if (Let-type s) (t->s (Let-type s)) #f) ,(e->s (Let-expr s)))]
+    [(Invoke? s) `(invoke ,(Invoke-name s) ,@(map e->s (Invoke-args s)))]
+    [(Assert? s) `(assert ,(e->s (Assert-expr s)))]
+    [(ExprInto? s) `(into ,(ExprInto-target s) ,(e->s (ExprInto-expr s)))]))
+
+(define (ast->sexpr a)
+  (cond
+    [(Program? a)
+     `(program ,(Program-module a)
+               (types ,@(map (lambda (td) `(,(TypeDef-name td) (unsigned ,(TypeDef-width td)))) (Program-types a)))
+               ,@(map (lambda (f)
+                        `(functor ,(Functor-name f)
+                                  (accepts ,@(map (lambda (p) `(,(Param-name p) ,(t->s (Param-type p)))) (Functor-params f)))
+                                  (return ,(if (Functor-ret f) (t->s (Functor-ret f)) #f))
+                                  (exec ,@(map s->s (Functor-body f)))
+                                  (prove ,@(map e->s (Functor-prove f)))))
+                      (Program-functors a))
+               (entry ,(Main-name (Program-main a))
+                      ,@(map s->s (Main-body (Program-main a)))))]
+    [else '()]))
+
+#lang racket/base
+(provide forge-grammar first-of)
+
+;; Normative grammar of FORGE v0.1, mirrored by syntax/parser.rkt.
+;; Each production names the parser function that implements it.
+
+(define forge-grammar
+  '((program ::= module-decl type-section functor-section* program-section)
+    (module-decl ::= "MODULE" IDENT)
+    (type-section ::= ["TYPE" type-def+])
+    (type-def ::= IDENT "=" "UNSIGNED" NUMBER)
+    (functor-section::= "FUNCTOR" IDENT accept* return? exec-block prove-block "END")
+    (accept ::= "ACCEPT" type IDENT)
+    (return ::= "RETURN" type)
+    (exec-block ::= "EXECUTE" statement* "END")
+    (prove-block ::= "PROVE" contract-expr* "END")
+    (program-section::= "PROGRAM" IDENT statement* "END")
+    (statement ::= let-stmt / invoke-stmt / assert-stmt / into-stmt)
+    (let-stmt ::= "LET" IDENT "BE" expr ["AS" type])
+    (invoke-stmt ::= "INVOKE" IDENT ["WITH" expr ("," expr)*])
+    (assert-stmt ::= "ASSERT" expr)
+    (into-stmt ::= expr "INTO" target)
+    (target ::= "RESULT" / IDENT)
+    (expr ::= arith [comparison-op arith])
+    (arith ::= term (("PLUS"/"MINUS") term)*)
+    (term ::= factor (("TIMES"/"DIVIDED-BY"/"REMAINDER") factor)*)
+    (factor ::= NUMBER / IDENT / "RESULT" / "(" expr ")")
+    (type ::= "UNSIGNED" NUMBER / "BOOLEAN" / IDENT)))
+
+(define first-sets
+  '((statement . (LET INVOKE ASSERT NUMBER IDENT RESULT LPAREN))
+    (expr . (NUMBER IDENT RESULT LPAREN))
+    (type . (UNSIGNED BOOLEAN IDENT))))
+
+(define (first-of nt)
+  (cond
+    [(assoc nt first-sets) => cdr]
+    [else '()]))

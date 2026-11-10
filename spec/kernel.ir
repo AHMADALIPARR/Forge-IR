@@ -1,0 +1,11 @@
+FORGE-IR 1
+MODULE <module-id>
+FUNC <function-id> <argument-count> <register-count>
+CONST <destination-register> <signed-integer>
+MOVE <destination-register> <source-register>
+ADD <destination-register> <left-register> <right-register>
+SUB <destination-register> <left-register> <right-register>
+MUL <destination-register> <left-register> <right-register>
+RETURN <source-register>
+ENDFUNC
+ENDMODULE

@@ -1,0 +1,1717 @@
+{
+ "target": "x86-64 Linux userspace, static ELF64, entry = first byte of engine.bin",
+ "decoders": [
+  {
+   "name": "GNU objdump",
+   "version": "GNU objdump (GNU Binutils for Debian) 2.44",
+   "command": "objdump -D -b binary -m i386:x86-64 --insn-width=16 engine.bin",
+   "decoded_instructions": 25377,
+   "bad_decodes": 0
+  },
+  {
+   "name": "Capstone",
+   "version": "5.0.9",
+   "mode": "CS_ARCH_X86/CS_MODE_64",
+   "decoded_instructions": 25377,
+   "bytes_covered": 117487,
+   "boundaries_identical_to_objdump": true
+  }
+ ],
+ "engine_hex_lines": 25377,
+ "assembler_emitted_instruction_count": 25377,
+ "hex_lines_equal_decoded_count": true,
+ "every_hex_line_matches_decoded_boundary": true,
+ "concat_engine_hex_equals_engine_bin": true,
+ "engine_bin_bytes": 117487,
+ "elf_text_section_equals_engine_bin": {
+  "result": true,
+  "method": "dd of .text file range (offset 0x1000, size 0x1caef from readelf) out of engine.elf, cmp against engine.bin: identical",
+  "elf_entry": "0x401000 = .text start = engine.bin byte 0",
+  "elf": "stripped static ELF64 x86-64 EXEC, GNU ld 2.44; PT_LOAD R+X = .text only, PT_LOAD RW = .bss (zero-initialized memory regions, 0x12928 bytes)"
+ },
+ "static_reachability": {
+  "reachable_from_entry": 25377,
+  "total": 25377,
+  "unresolved_branch_targets": 0
+ },
+ "privileged_or_trap_instructions": 0,
+ "syscalls_used": "write(1) and exit(60) only",
+ "execution": {
+  "command": "./engine.elf",
+  "exit_code": 0,
+  "stdout": "PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP",
+  "stdout_meaning": "one char per invariant in index order: P=pass F=fail; exit code = number of failed invariants (capped 255)"
+ },
+ "invariants_total": 278,
+ "invariants_passed": 278,
+ "invariants": [
+  {
+   "index": 0,
+   "name": "lcg_buffer_fill_state",
+   "expected_u64_hex": "7ab49dcb1041ddef",
+   "observed": "pass"
+  },
+  {
+   "index": 1,
+   "name": "crc32_ieee_bitwise",
+   "expected_u64_hex": "0000000076386dce",
+   "observed": "pass"
+  },
+  {
+   "index": 2,
+   "name": "adler32_div",
+   "expected_u64_hex": "00000000eceed89a",
+   "observed": "pass"
+  },
+  {
+   "index": 3,
+   "name": "fnv1a64",
+   "expected_u64_hex": "858b2ac2af897c07",
+   "observed": "pass"
+  },
+  {
+   "index": 4,
+   "name": "sieve_prime_count_below_65536",
+   "expected_u64_hex": "000000000000198e",
+   "observed": "pass"
+  },
+  {
+   "index": 5,
+   "name": "gcd_sum_1_1000_360360",
+   "expected_u64_hex": "000000000000ac46",
+   "observed": "pass"
+  },
+  {
+   "index": 6,
+   "name": "isqrt_sum",
+   "expected_u64_hex": "000000000425896e",
+   "observed": "pass"
+  },
+  {
+   "index": 7,
+   "name": "fib_90_iterative",
+   "expected_u64_hex": "27f80ddaa1ba7878",
+   "observed": "pass"
+  },
+  {
+   "index": 8,
+   "name": "fib_22_recursive",
+   "expected_u64_hex": "000000000000452f",
+   "observed": "pass"
+  },
+  {
+   "index": 9,
+   "name": "matmul_8x8_weighted_checksum",
+   "expected_u64_hex": "ff9981036784806f",
+   "observed": "pass"
+  },
+  {
+   "index": 10,
+   "name": "sort_adjacent_inversions_zero",
+   "expected_u64_hex": "0000000000000000",
+   "observed": "pass"
+  },
+  {
+   "index": 11,
+   "name": "sort_512_rotxor_checksum",
+   "expected_u64_hex": "a73d9831eba78558",
+   "observed": "pass"
+  },
+  {
+   "index": 12,
+   "name": "popcount_buffer",
+   "expected_u64_hex": "0000000000003f81",
+   "observed": "pass"
+  },
+  {
+   "index": 13,
+   "name": "sse2_paddd_lane_sum",
+   "expected_u64_hex": "00000000f5cff458",
+   "observed": "pass"
+  },
+  {
+   "index": 14,
+   "name": "sse2_pmaddwd_dot_lane_sum",
+   "expected_u64_hex": "00000002d4880960",
+   "observed": "pass"
+  },
+  {
+   "index": 15,
+   "name": "crc32c_sse42",
+   "expected_u64_hex": "000000001408a5b1",
+   "observed": "pass"
+  },
+  {
+   "index": 16,
+   "name": "collatz_total_steps_1_3000",
+   "expected_u64_hex": "0000000000034817",
+   "observed": "pass"
+  },
+  {
+   "index": 17,
+   "name": "mix_block_0000",
+   "expected_u64_hex": "19774dc25bc68464",
+   "observed": "pass"
+  },
+  {
+   "index": 18,
+   "name": "mix_block_0001",
+   "expected_u64_hex": "5250b0c2de147aac",
+   "observed": "pass"
+  },
+  {
+   "index": 19,
+   "name": "mix_block_0002",
+   "expected_u64_hex": "2d628052da96d4f4",
+   "observed": "pass"
+  },
+  {
+   "index": 20,
+   "name": "mix_block_0003",
+   "expected_u64_hex": "01f4c41027c4519c",
+   "observed": "pass"
+  },
+  {
+   "index": 21,
+   "name": "mix_block_0004",
+   "expected_u64_hex": "c925d06933add8a0",
+   "observed": "pass"
+  },
+  {
+   "index": 22,
+   "name": "mix_block_0005",
+   "expected_u64_hex": "72b9fc3cde316042",
+   "observed": "pass"
+  },
+  {
+   "index": 23,
+   "name": "mix_block_0006",
+   "expected_u64_hex": "ea140dc563fa9585",
+   "observed": "pass"
+  },
+  {
+   "index": 24,
+   "name": "mix_block_0007",
+   "expected_u64_hex": "a58f8fa980f8b26c",
+   "observed": "pass"
+  },
+  {
+   "index": 25,
+   "name": "mix_block_0008",
+   "expected_u64_hex": "5b2dd2c46d0a26e6",
+   "observed": "pass"
+  },
+  {
+   "index": 26,
+   "name": "mix_block_0009",
+   "expected_u64_hex": "98f5366d15a642f7",
+   "observed": "pass"
+  },
+  {
+   "index": 27,
+   "name": "mix_block_0010",
+   "expected_u64_hex": "2dee62cd5aaeb7b8",
+   "observed": "pass"
+  },
+  {
+   "index": 28,
+   "name": "mix_block_0011",
+   "expected_u64_hex": "5cd976bbfcbd6b8b",
+   "observed": "pass"
+  },
+  {
+   "index": 29,
+   "name": "mix_block_0012",
+   "expected_u64_hex": "f4e2fca0d7a8b657",
+   "observed": "pass"
+  },
+  {
+   "index": 30,
+   "name": "mix_block_0013",
+   "expected_u64_hex": "87ae17a9d311eaac",
+   "observed": "pass"
+  },
+  {
+   "index": 31,
+   "name": "mix_block_0014",
+   "expected_u64_hex": "dced8c8076b51718",
+   "observed": "pass"
+  },
+  {
+   "index": 32,
+   "name": "mix_block_0015",
+   "expected_u64_hex": "5eca754e984bb497",
+   "observed": "pass"
+  },
+  {
+   "index": 33,
+   "name": "mix_block_0016",
+   "expected_u64_hex": "95a117e9d3111c89",
+   "observed": "pass"
+  },
+  {
+   "index": 34,
+   "name": "mix_block_0017",
+   "expected_u64_hex": "1fc14fa3f90629f3",
+   "observed": "pass"
+  },
+  {
+   "index": 35,
+   "name": "mix_block_0018",
+   "expected_u64_hex": "ebf089546d1acacb",
+   "observed": "pass"
+  },
+  {
+   "index": 36,
+   "name": "mix_block_0019",
+   "expected_u64_hex": "29587ffccae944dc",
+   "observed": "pass"
+  },
+  {
+   "index": 37,
+   "name": "mix_block_0020",
+   "expected_u64_hex": "271296189db7cc3f",
+   "observed": "pass"
+  },
+  {
+   "index": 38,
+   "name": "mix_block_0021",
+   "expected_u64_hex": "bab8c127e87f9c2e",
+   "observed": "pass"
+  },
+  {
+   "index": 39,
+   "name": "mix_block_0022",
+   "expected_u64_hex": "856e3692c9858e09",
+   "observed": "pass"
+  },
+  {
+   "index": 40,
+   "name": "mix_block_0023",
+   "expected_u64_hex": "ca9eb0f2d36bf635",
+   "observed": "pass"
+  },
+  {
+   "index": 41,
+   "name": "mix_block_0024",
+   "expected_u64_hex": "0624756adfdb09a5",
+   "observed": "pass"
+  },
+  {
+   "index": 42,
+   "name": "mix_block_0025",
+   "expected_u64_hex": "2d2df0e5bb44d07e",
+   "observed": "pass"
+  },
+  {
+   "index": 43,
+   "name": "mix_block_0026",
+   "expected_u64_hex": "27383bf14ab9f109",
+   "observed": "pass"
+  },
+  {
+   "index": 44,
+   "name": "mix_block_0027",
+   "expected_u64_hex": "63458bd671dd46a9",
+   "observed": "pass"
+  },
+  {
+   "index": 45,
+   "name": "mix_block_0028",
+   "expected_u64_hex": "86d571bced92eed5",
+   "observed": "pass"
+  },
+  {
+   "index": 46,
+   "name": "mix_block_0029",
+   "expected_u64_hex": "447fed7b901397b9",
+   "observed": "pass"
+  },
+  {
+   "index": 47,
+   "name": "mix_block_0030",
+   "expected_u64_hex": "9dd5e2c325b90c38",
+   "observed": "pass"
+  },
+  {
+   "index": 48,
+   "name": "mix_block_0031",
+   "expected_u64_hex": "708286203d2cd293",
+   "observed": "pass"
+  },
+  {
+   "index": 49,
+   "name": "mix_block_0032",
+   "expected_u64_hex": "586e7f6b02acd7e8",
+   "observed": "pass"
+  },
+  {
+   "index": 50,
+   "name": "mix_block_0033",
+   "expected_u64_hex": "709609fc7044e3f4",
+   "observed": "pass"
+  },
+  {
+   "index": 51,
+   "name": "mix_block_0034",
+   "expected_u64_hex": "c6950b4fc8d25082",
+   "observed": "pass"
+  },
+  {
+   "index": 52,
+   "name": "mix_block_0035",
+   "expected_u64_hex": "b7f05145841e2cb8",
+   "observed": "pass"
+  },
+  {
+   "index": 53,
+   "name": "mix_block_0036",
+   "expected_u64_hex": "05ed6bebcbaa87f4",
+   "observed": "pass"
+  },
+  {
+   "index": 54,
+   "name": "mix_block_0037",
+   "expected_u64_hex": "75b1c4dfe223e31a",
+   "observed": "pass"
+  },
+  {
+   "index": 55,
+   "name": "mix_block_0038",
+   "expected_u64_hex": "12f48e1fc1acc06c",
+   "observed": "pass"
+  },
+  {
+   "index": 56,
+   "name": "mix_block_0039",
+   "expected_u64_hex": "99ca8b50f0c52af1",
+   "observed": "pass"
+  },
+  {
+   "index": 57,
+   "name": "mix_block_0040",
+   "expected_u64_hex": "4202518b740ece22",
+   "observed": "pass"
+  },
+  {
+   "index": 58,
+   "name": "mix_block_0041",
+   "expected_u64_hex": "31650ac6359e6cc8",
+   "observed": "pass"
+  },
+  {
+   "index": 59,
+   "name": "mix_block_0042",
+   "expected_u64_hex": "f715bb6ea8a35edd",
+   "observed": "pass"
+  },
+  {
+   "index": 60,
+   "name": "mix_block_0043",
+   "expected_u64_hex": "f80bff4df1daa092",
+   "observed": "pass"
+  },
+  {
+   "index": 61,
+   "name": "mix_block_0044",
+   "expected_u64_hex": "039313b3f04bf433",
+   "observed": "pass"
+  },
+  {
+   "index": 62,
+   "name": "mix_block_0045",
+   "expected_u64_hex": "5f7898293feebbf8",
+   "observed": "pass"
+  },
+  {
+   "index": 63,
+   "name": "mix_block_0046",
+   "expected_u64_hex": "25b0c56aec3d8c6b",
+   "observed": "pass"
+  },
+  {
+   "index": 64,
+   "name": "mix_block_0047",
+   "expected_u64_hex": "dd66b3af514ab662",
+   "observed": "pass"
+  },
+  {
+   "index": 65,
+   "name": "mix_block_0048",
+   "expected_u64_hex": "900222f09868629f",
+   "observed": "pass"
+  },
+  {
+   "index": 66,
+   "name": "mix_block_0049",
+   "expected_u64_hex": "05a2c98fa571da2b",
+   "observed": "pass"
+  },
+  {
+   "index": 67,
+   "name": "mix_block_0050",
+   "expected_u64_hex": "c065c7c461c8cd8f",
+   "observed": "pass"
+  },
+  {
+   "index": 68,
+   "name": "mix_block_0051",
+   "expected_u64_hex": "9057ee01f3479d80",
+   "observed": "pass"
+  },
+  {
+   "index": 69,
+   "name": "mix_block_0052",
+   "expected_u64_hex": "e2da0a4dfeb08681",
+   "observed": "pass"
+  },
+  {
+   "index": 70,
+   "name": "mix_block_0053",
+   "expected_u64_hex": "cf43028ab37d4adf",
+   "observed": "pass"
+  },
+  {
+   "index": 71,
+   "name": "mix_block_0054",
+   "expected_u64_hex": "fa6556d52b296f0c",
+   "observed": "pass"
+  },
+  {
+   "index": 72,
+   "name": "mix_block_0055",
+   "expected_u64_hex": "d130ff625a3ff404",
+   "observed": "pass"
+  },
+  {
+   "index": 73,
+   "name": "mix_block_0056",
+   "expected_u64_hex": "fec54c940f211343",
+   "observed": "pass"
+  },
+  {
+   "index": 74,
+   "name": "mix_block_0057",
+   "expected_u64_hex": "d9f6678a4ec8399a",
+   "observed": "pass"
+  },
+  {
+   "index": 75,
+   "name": "mix_block_0058",
+   "expected_u64_hex": "9506440d9206a614",
+   "observed": "pass"
+  },
+  {
+   "index": 76,
+   "name": "mix_block_0059",
+   "expected_u64_hex": "92806a85aa0669c7",
+   "observed": "pass"
+  },
+  {
+   "index": 77,
+   "name": "mix_block_0060",
+   "expected_u64_hex": "92211da00ffb82a3",
+   "observed": "pass"
+  },
+  {
+   "index": 78,
+   "name": "mix_block_0061",
+   "expected_u64_hex": "0a936762f27125e4",
+   "observed": "pass"
+  },
+  {
+   "index": 79,
+   "name": "mix_block_0062",
+   "expected_u64_hex": "5ea25a35deb6fa22",
+   "observed": "pass"
+  },
+  {
+   "index": 80,
+   "name": "mix_block_0063",
+   "expected_u64_hex": "9ba439e0f0758f41",
+   "observed": "pass"
+  },
+  {
+   "index": 81,
+   "name": "mix_block_0064",
+   "expected_u64_hex": "ffd4625b980a68b8",
+   "observed": "pass"
+  },
+  {
+   "index": 82,
+   "name": "mix_block_0065",
+   "expected_u64_hex": "68dbd14af6ad0b0a",
+   "observed": "pass"
+  },
+  {
+   "index": 83,
+   "name": "mix_block_0066",
+   "expected_u64_hex": "142636ef338e9d9b",
+   "observed": "pass"
+  },
+  {
+   "index": 84,
+   "name": "mix_block_0067",
+   "expected_u64_hex": "cec84f8fd1069398",
+   "observed": "pass"
+  },
+  {
+   "index": 85,
+   "name": "mix_block_0068",
+   "expected_u64_hex": "83c3e5d1cb781389",
+   "observed": "pass"
+  },
+  {
+   "index": 86,
+   "name": "mix_block_0069",
+   "expected_u64_hex": "806a08cd2519fe83",
+   "observed": "pass"
+  },
+  {
+   "index": 87,
+   "name": "mix_block_0070",
+   "expected_u64_hex": "1b35cdafb1747bda",
+   "observed": "pass"
+  },
+  {
+   "index": 88,
+   "name": "mix_block_0071",
+   "expected_u64_hex": "5b08032803fb2625",
+   "observed": "pass"
+  },
+  {
+   "index": 89,
+   "name": "mix_block_0072",
+   "expected_u64_hex": "9cc81069135e2d93",
+   "observed": "pass"
+  },
+  {
+   "index": 90,
+   "name": "mix_block_0073",
+   "expected_u64_hex": "a5968d3bdacf45dd",
+   "observed": "pass"
+  },
+  {
+   "index": 91,
+   "name": "mix_block_0074",
+   "expected_u64_hex": "71b0e4ea0b57a3d6",
+   "observed": "pass"
+  },
+  {
+   "index": 92,
+   "name": "mix_block_0075",
+   "expected_u64_hex": "4f250f269ad58627",
+   "observed": "pass"
+  },
+  {
+   "index": 93,
+   "name": "mix_block_0076",
+   "expected_u64_hex": "afd6606109ca8076",
+   "observed": "pass"
+  },
+  {
+   "index": 94,
+   "name": "mix_block_0077",
+   "expected_u64_hex": "8c4e0b34a15ac9a2",
+   "observed": "pass"
+  },
+  {
+   "index": 95,
+   "name": "mix_block_0078",
+   "expected_u64_hex": "a4b71e506a96da0f",
+   "observed": "pass"
+  },
+  {
+   "index": 96,
+   "name": "mix_block_0079",
+   "expected_u64_hex": "a676c3636b3cb244",
+   "observed": "pass"
+  },
+  {
+   "index": 97,
+   "name": "mix_block_0080",
+   "expected_u64_hex": "218051798151e630",
+   "observed": "pass"
+  },
+  {
+   "index": 98,
+   "name": "mix_block_0081",
+   "expected_u64_hex": "704e819271e20a09",
+   "observed": "pass"
+  },
+  {
+   "index": 99,
+   "name": "mix_block_0082",
+   "expected_u64_hex": "b2f0984cc1e22d9d",
+   "observed": "pass"
+  },
+  {
+   "index": 100,
+   "name": "mix_block_0083",
+   "expected_u64_hex": "cf8f01b8506efded",
+   "observed": "pass"
+  },
+  {
+   "index": 101,
+   "name": "mix_block_0084",
+   "expected_u64_hex": "1ff022429fc5a80c",
+   "observed": "pass"
+  },
+  {
+   "index": 102,
+   "name": "mix_block_0085",
+   "expected_u64_hex": "7a5eb400cbde11b4",
+   "observed": "pass"
+  },
+  {
+   "index": 103,
+   "name": "mix_block_0086",
+   "expected_u64_hex": "86b757011c1d9d99",
+   "observed": "pass"
+  },
+  {
+   "index": 104,
+   "name": "mix_block_0087",
+   "expected_u64_hex": "270df1a140c1f947",
+   "observed": "pass"
+  },
+  {
+   "index": 105,
+   "name": "mix_block_0088",
+   "expected_u64_hex": "a907e19f0b264bef",
+   "observed": "pass"
+  },
+  {
+   "index": 106,
+   "name": "mix_block_0089",
+   "expected_u64_hex": "a93c00adacd8cf08",
+   "observed": "pass"
+  },
+  {
+   "index": 107,
+   "name": "mix_block_0090",
+   "expected_u64_hex": "8684f889bdf1eab8",
+   "observed": "pass"
+  },
+  {
+   "index": 108,
+   "name": "mix_block_0091",
+   "expected_u64_hex": "79e22a3981165529",
+   "observed": "pass"
+  },
+  {
+   "index": 109,
+   "name": "mix_block_0092",
+   "expected_u64_hex": "add3f3db24260144",
+   "observed": "pass"
+  },
+  {
+   "index": 110,
+   "name": "mix_block_0093",
+   "expected_u64_hex": "35b3ca9739e5dce3",
+   "observed": "pass"
+  },
+  {
+   "index": 111,
+   "name": "mix_block_0094",
+   "expected_u64_hex": "c371ca668b9d9dab",
+   "observed": "pass"
+  },
+  {
+   "index": 112,
+   "name": "mix_block_0095",
+   "expected_u64_hex": "63545a3feaba36d9",
+   "observed": "pass"
+  },
+  {
+   "index": 113,
+   "name": "mix_block_0096",
+   "expected_u64_hex": "60502e8e0af70162",
+   "observed": "pass"
+  },
+  {
+   "index": 114,
+   "name": "mix_block_0097",
+   "expected_u64_hex": "983f1d94fee8c21e",
+   "observed": "pass"
+  },
+  {
+   "index": 115,
+   "name": "mix_block_0098",
+   "expected_u64_hex": "b857438bfbeffa39",
+   "observed": "pass"
+  },
+  {
+   "index": 116,
+   "name": "mix_block_0099",
+   "expected_u64_hex": "1614a287381bbaaa",
+   "observed": "pass"
+  },
+  {
+   "index": 117,
+   "name": "mix_block_0100",
+   "expected_u64_hex": "085303f4cfd11e25",
+   "observed": "pass"
+  },
+  {
+   "index": 118,
+   "name": "mix_block_0101",
+   "expected_u64_hex": "dc1b3f2d33c604f3",
+   "observed": "pass"
+  },
+  {
+   "index": 119,
+   "name": "mix_block_0102",
+   "expected_u64_hex": "3e7a6b688f9563f6",
+   "observed": "pass"
+  },
+  {
+   "index": 120,
+   "name": "mix_block_0103",
+   "expected_u64_hex": "dbc34f95bdac654e",
+   "observed": "pass"
+  },
+  {
+   "index": 121,
+   "name": "mix_block_0104",
+   "expected_u64_hex": "182464325232cab9",
+   "observed": "pass"
+  },
+  {
+   "index": 122,
+   "name": "mix_block_0105",
+   "expected_u64_hex": "b0a76cedb408d0c9",
+   "observed": "pass"
+  },
+  {
+   "index": 123,
+   "name": "mix_block_0106",
+   "expected_u64_hex": "e17d232c02e2257e",
+   "observed": "pass"
+  },
+  {
+   "index": 124,
+   "name": "mix_block_0107",
+   "expected_u64_hex": "4592a4c107d90cdf",
+   "observed": "pass"
+  },
+  {
+   "index": 125,
+   "name": "mix_block_0108",
+   "expected_u64_hex": "9bb67bb56fdc4f35",
+   "observed": "pass"
+  },
+  {
+   "index": 126,
+   "name": "mix_block_0109",
+   "expected_u64_hex": "d4018db808f4c7f8",
+   "observed": "pass"
+  },
+  {
+   "index": 127,
+   "name": "mix_block_0110",
+   "expected_u64_hex": "7709a04463a11a9c",
+   "observed": "pass"
+  },
+  {
+   "index": 128,
+   "name": "mix_block_0111",
+   "expected_u64_hex": "601aaffc4f98c03e",
+   "observed": "pass"
+  },
+  {
+   "index": 129,
+   "name": "mix_block_0112",
+   "expected_u64_hex": "e37485918b18d751",
+   "observed": "pass"
+  },
+  {
+   "index": 130,
+   "name": "mix_block_0113",
+   "expected_u64_hex": "e7b21f9827cf6f89",
+   "observed": "pass"
+  },
+  {
+   "index": 131,
+   "name": "mix_block_0114",
+   "expected_u64_hex": "d8e9874a860cdbb9",
+   "observed": "pass"
+  },
+  {
+   "index": 132,
+   "name": "mix_block_0115",
+   "expected_u64_hex": "3f78c040244516d2",
+   "observed": "pass"
+  },
+  {
+   "index": 133,
+   "name": "mix_block_0116",
+   "expected_u64_hex": "9eab6745cfd0bfe9",
+   "observed": "pass"
+  },
+  {
+   "index": 134,
+   "name": "mix_block_0117",
+   "expected_u64_hex": "73b535236c54e805",
+   "observed": "pass"
+  },
+  {
+   "index": 135,
+   "name": "mix_block_0118",
+   "expected_u64_hex": "ac4316674f260e93",
+   "observed": "pass"
+  },
+  {
+   "index": 136,
+   "name": "mix_block_0119",
+   "expected_u64_hex": "9070c4b9d77d6f30",
+   "observed": "pass"
+  },
+  {
+   "index": 137,
+   "name": "mix_block_0120",
+   "expected_u64_hex": "c62ce95d12a36c9c",
+   "observed": "pass"
+  },
+  {
+   "index": 138,
+   "name": "mix_block_0121",
+   "expected_u64_hex": "2310408c4d1a1112",
+   "observed": "pass"
+  },
+  {
+   "index": 139,
+   "name": "mix_block_0122",
+   "expected_u64_hex": "cc2d85e1fc313718",
+   "observed": "pass"
+  },
+  {
+   "index": 140,
+   "name": "mix_block_0123",
+   "expected_u64_hex": "b45b9adee75a90e5",
+   "observed": "pass"
+  },
+  {
+   "index": 141,
+   "name": "mix_block_0124",
+   "expected_u64_hex": "a615513522c0a4f6",
+   "observed": "pass"
+  },
+  {
+   "index": 142,
+   "name": "mix_block_0125",
+   "expected_u64_hex": "bc03fab3a19e6932",
+   "observed": "pass"
+  },
+  {
+   "index": 143,
+   "name": "mix_block_0126",
+   "expected_u64_hex": "2d9a10790bdd4032",
+   "observed": "pass"
+  },
+  {
+   "index": 144,
+   "name": "mix_block_0127",
+   "expected_u64_hex": "ab32e8c71be90b23",
+   "observed": "pass"
+  },
+  {
+   "index": 145,
+   "name": "mix_block_0128",
+   "expected_u64_hex": "1a2fa9dac416f1ce",
+   "observed": "pass"
+  },
+  {
+   "index": 146,
+   "name": "mix_block_0129",
+   "expected_u64_hex": "4e9e6e55a54f4f8b",
+   "observed": "pass"
+  },
+  {
+   "index": 147,
+   "name": "mix_block_0130",
+   "expected_u64_hex": "fd8cab147c238308",
+   "observed": "pass"
+  },
+  {
+   "index": 148,
+   "name": "mix_block_0131",
+   "expected_u64_hex": "2baeb524c804294a",
+   "observed": "pass"
+  },
+  {
+   "index": 149,
+   "name": "mix_block_0132",
+   "expected_u64_hex": "73a70ea1349d2633",
+   "observed": "pass"
+  },
+  {
+   "index": 150,
+   "name": "mix_block_0133",
+   "expected_u64_hex": "10b42f37a0ecb8db",
+   "observed": "pass"
+  },
+  {
+   "index": 151,
+   "name": "mix_block_0134",
+   "expected_u64_hex": "ce66a0a224b4cfbb",
+   "observed": "pass"
+  },
+  {
+   "index": 152,
+   "name": "mix_block_0135",
+   "expected_u64_hex": "a1cbccabef964911",
+   "observed": "pass"
+  },
+  {
+   "index": 153,
+   "name": "mix_block_0136",
+   "expected_u64_hex": "4ba5584242b503f8",
+   "observed": "pass"
+  },
+  {
+   "index": 154,
+   "name": "mix_block_0137",
+   "expected_u64_hex": "5f706fcdbd52d1ad",
+   "observed": "pass"
+  },
+  {
+   "index": 155,
+   "name": "mix_block_0138",
+   "expected_u64_hex": "3aa73c50bbe4ae54",
+   "observed": "pass"
+  },
+  {
+   "index": 156,
+   "name": "mix_block_0139",
+   "expected_u64_hex": "bbd06377646f0dd7",
+   "observed": "pass"
+  },
+  {
+   "index": 157,
+   "name": "mix_block_0140",
+   "expected_u64_hex": "32a35584b3cebebd",
+   "observed": "pass"
+  },
+  {
+   "index": 158,
+   "name": "mix_block_0141",
+   "expected_u64_hex": "42a45d362adfcfbf",
+   "observed": "pass"
+  },
+  {
+   "index": 159,
+   "name": "mix_block_0142",
+   "expected_u64_hex": "43f1ff3d3c19aebd",
+   "observed": "pass"
+  },
+  {
+   "index": 160,
+   "name": "mix_block_0143",
+   "expected_u64_hex": "1275471b77ad424a",
+   "observed": "pass"
+  },
+  {
+   "index": 161,
+   "name": "mix_block_0144",
+   "expected_u64_hex": "95117940e92428ae",
+   "observed": "pass"
+  },
+  {
+   "index": 162,
+   "name": "mix_block_0145",
+   "expected_u64_hex": "84d48e9150f41290",
+   "observed": "pass"
+  },
+  {
+   "index": 163,
+   "name": "mix_block_0146",
+   "expected_u64_hex": "c5fad9579ce3234a",
+   "observed": "pass"
+  },
+  {
+   "index": 164,
+   "name": "mix_block_0147",
+   "expected_u64_hex": "73653e66a98cc67a",
+   "observed": "pass"
+  },
+  {
+   "index": 165,
+   "name": "mix_block_0148",
+   "expected_u64_hex": "cc846ef65b515474",
+   "observed": "pass"
+  },
+  {
+   "index": 166,
+   "name": "mix_block_0149",
+   "expected_u64_hex": "eb37314f4f1224b6",
+   "observed": "pass"
+  },
+  {
+   "index": 167,
+   "name": "mix_block_0150",
+   "expected_u64_hex": "fb7419c78824e5df",
+   "observed": "pass"
+  },
+  {
+   "index": 168,
+   "name": "mix_block_0151",
+   "expected_u64_hex": "cdb0644c2f276526",
+   "observed": "pass"
+  },
+  {
+   "index": 169,
+   "name": "mix_block_0152",
+   "expected_u64_hex": "69550b4a5ea82f81",
+   "observed": "pass"
+  },
+  {
+   "index": 170,
+   "name": "mix_block_0153",
+   "expected_u64_hex": "4f329f2ffb3e6958",
+   "observed": "pass"
+  },
+  {
+   "index": 171,
+   "name": "mix_block_0154",
+   "expected_u64_hex": "7d63413b3462ca73",
+   "observed": "pass"
+  },
+  {
+   "index": 172,
+   "name": "mix_block_0155",
+   "expected_u64_hex": "162d05db3d7c81a3",
+   "observed": "pass"
+  },
+  {
+   "index": 173,
+   "name": "mix_block_0156",
+   "expected_u64_hex": "c0a0735b8d8fd175",
+   "observed": "pass"
+  },
+  {
+   "index": 174,
+   "name": "mix_block_0157",
+   "expected_u64_hex": "fc88b8c47a8c4d5b",
+   "observed": "pass"
+  },
+  {
+   "index": 175,
+   "name": "mix_block_0158",
+   "expected_u64_hex": "a07d7ef7f88d6dc7",
+   "observed": "pass"
+  },
+  {
+   "index": 176,
+   "name": "mix_block_0159",
+   "expected_u64_hex": "cd9d8fde5c7851d4",
+   "observed": "pass"
+  },
+  {
+   "index": 177,
+   "name": "mix_block_0160",
+   "expected_u64_hex": "d57e4b096d65409d",
+   "observed": "pass"
+  },
+  {
+   "index": 178,
+   "name": "mix_block_0161",
+   "expected_u64_hex": "2598d2baf52d96bd",
+   "observed": "pass"
+  },
+  {
+   "index": 179,
+   "name": "mix_block_0162",
+   "expected_u64_hex": "f356a98e199e030c",
+   "observed": "pass"
+  },
+  {
+   "index": 180,
+   "name": "mix_block_0163",
+   "expected_u64_hex": "bac854face3ad929",
+   "observed": "pass"
+  },
+  {
+   "index": 181,
+   "name": "mix_block_0164",
+   "expected_u64_hex": "3336d14f2d829c3f",
+   "observed": "pass"
+  },
+  {
+   "index": 182,
+   "name": "mix_block_0165",
+   "expected_u64_hex": "4d96c4b1a3586d5a",
+   "observed": "pass"
+  },
+  {
+   "index": 183,
+   "name": "mix_block_0166",
+   "expected_u64_hex": "9eaf920e84a795ed",
+   "observed": "pass"
+  },
+  {
+   "index": 184,
+   "name": "mix_block_0167",
+   "expected_u64_hex": "6db158eaaf279591",
+   "observed": "pass"
+  },
+  {
+   "index": 185,
+   "name": "mix_block_0168",
+   "expected_u64_hex": "5c7da6b93044c5a4",
+   "observed": "pass"
+  },
+  {
+   "index": 186,
+   "name": "mix_block_0169",
+   "expected_u64_hex": "63407ed8dc13724f",
+   "observed": "pass"
+  },
+  {
+   "index": 187,
+   "name": "mix_block_0170",
+   "expected_u64_hex": "226c0233f2bdd23c",
+   "observed": "pass"
+  },
+  {
+   "index": 188,
+   "name": "mix_block_0171",
+   "expected_u64_hex": "28a487059214173b",
+   "observed": "pass"
+  },
+  {
+   "index": 189,
+   "name": "mix_block_0172",
+   "expected_u64_hex": "e1cc689c42677a27",
+   "observed": "pass"
+  },
+  {
+   "index": 190,
+   "name": "mix_block_0173",
+   "expected_u64_hex": "e49fb5bf75123a01",
+   "observed": "pass"
+  },
+  {
+   "index": 191,
+   "name": "mix_block_0174",
+   "expected_u64_hex": "204fafe8c86fe33b",
+   "observed": "pass"
+  },
+  {
+   "index": 192,
+   "name": "mix_block_0175",
+   "expected_u64_hex": "abe0329ff4667283",
+   "observed": "pass"
+  },
+  {
+   "index": 193,
+   "name": "mix_block_0176",
+   "expected_u64_hex": "fa04fd8b75f93621",
+   "observed": "pass"
+  },
+  {
+   "index": 194,
+   "name": "mix_block_0177",
+   "expected_u64_hex": "b63da47c1f6b6036",
+   "observed": "pass"
+  },
+  {
+   "index": 195,
+   "name": "mix_block_0178",
+   "expected_u64_hex": "0f887e07560506d6",
+   "observed": "pass"
+  },
+  {
+   "index": 196,
+   "name": "mix_block_0179",
+   "expected_u64_hex": "e798ed9727493e18",
+   "observed": "pass"
+  },
+  {
+   "index": 197,
+   "name": "mix_block_0180",
+   "expected_u64_hex": "2419c7311cc3c311",
+   "observed": "pass"
+  },
+  {
+   "index": 198,
+   "name": "mix_block_0181",
+   "expected_u64_hex": "433b53cca41ee879",
+   "observed": "pass"
+  },
+  {
+   "index": 199,
+   "name": "mix_block_0182",
+   "expected_u64_hex": "80cf41eee44cd0a9",
+   "observed": "pass"
+  },
+  {
+   "index": 200,
+   "name": "mix_block_0183",
+   "expected_u64_hex": "26fe333a5b8112bf",
+   "observed": "pass"
+  },
+  {
+   "index": 201,
+   "name": "mix_block_0184",
+   "expected_u64_hex": "f9ec96f655ae846d",
+   "observed": "pass"
+  },
+  {
+   "index": 202,
+   "name": "mix_block_0185",
+   "expected_u64_hex": "236832da094507e8",
+   "observed": "pass"
+  },
+  {
+   "index": 203,
+   "name": "mix_block_0186",
+   "expected_u64_hex": "d0563e515e08da41",
+   "observed": "pass"
+  },
+  {
+   "index": 204,
+   "name": "mix_block_0187",
+   "expected_u64_hex": "bee43ee17fca4c66",
+   "observed": "pass"
+  },
+  {
+   "index": 205,
+   "name": "mix_block_0188",
+   "expected_u64_hex": "40e8f3d990e3bc55",
+   "observed": "pass"
+  },
+  {
+   "index": 206,
+   "name": "mix_block_0189",
+   "expected_u64_hex": "f5bcdf5c01653db7",
+   "observed": "pass"
+  },
+  {
+   "index": 207,
+   "name": "mix_block_0190",
+   "expected_u64_hex": "3bb04352775a36fb",
+   "observed": "pass"
+  },
+  {
+   "index": 208,
+   "name": "mix_block_0191",
+   "expected_u64_hex": "76435952d14b3396",
+   "observed": "pass"
+  },
+  {
+   "index": 209,
+   "name": "mix_block_0192",
+   "expected_u64_hex": "b82be9462293573d",
+   "observed": "pass"
+  },
+  {
+   "index": 210,
+   "name": "mix_block_0193",
+   "expected_u64_hex": "01061667518291cf",
+   "observed": "pass"
+  },
+  {
+   "index": 211,
+   "name": "mix_block_0194",
+   "expected_u64_hex": "7a3f3e06bfd26493",
+   "observed": "pass"
+  },
+  {
+   "index": 212,
+   "name": "mix_block_0195",
+   "expected_u64_hex": "02cf573279db9959",
+   "observed": "pass"
+  },
+  {
+   "index": 213,
+   "name": "mix_block_0196",
+   "expected_u64_hex": "2cda2ee4a98e26de",
+   "observed": "pass"
+  },
+  {
+   "index": 214,
+   "name": "mix_block_0197",
+   "expected_u64_hex": "e3ce7ea275c219e3",
+   "observed": "pass"
+  },
+  {
+   "index": 215,
+   "name": "mix_block_0198",
+   "expected_u64_hex": "48da3567d3df9b8e",
+   "observed": "pass"
+  },
+  {
+   "index": 216,
+   "name": "mix_block_0199",
+   "expected_u64_hex": "ca79c81cc249991b",
+   "observed": "pass"
+  },
+  {
+   "index": 217,
+   "name": "mix_block_0200",
+   "expected_u64_hex": "d9144455f46dadc5",
+   "observed": "pass"
+  },
+  {
+   "index": 218,
+   "name": "mix_block_0201",
+   "expected_u64_hex": "c797567f40e39a3b",
+   "observed": "pass"
+  },
+  {
+   "index": 219,
+   "name": "mix_block_0202",
+   "expected_u64_hex": "75b3591d99bf77d9",
+   "observed": "pass"
+  },
+  {
+   "index": 220,
+   "name": "mix_block_0203",
+   "expected_u64_hex": "f53c5d9d1eb5f8be",
+   "observed": "pass"
+  },
+  {
+   "index": 221,
+   "name": "mix_block_0204",
+   "expected_u64_hex": "029ecbdad08dc624",
+   "observed": "pass"
+  },
+  {
+   "index": 222,
+   "name": "mix_block_0205",
+   "expected_u64_hex": "54810fabe210303b",
+   "observed": "pass"
+  },
+  {
+   "index": 223,
+   "name": "mix_block_0206",
+   "expected_u64_hex": "7c98699ab9b41fb6",
+   "observed": "pass"
+  },
+  {
+   "index": 224,
+   "name": "mix_block_0207",
+   "expected_u64_hex": "3ea484e53591781a",
+   "observed": "pass"
+  },
+  {
+   "index": 225,
+   "name": "mix_block_0208",
+   "expected_u64_hex": "a2749f192aa910c5",
+   "observed": "pass"
+  },
+  {
+   "index": 226,
+   "name": "mix_block_0209",
+   "expected_u64_hex": "d02b1e79e84bd006",
+   "observed": "pass"
+  },
+  {
+   "index": 227,
+   "name": "mix_block_0210",
+   "expected_u64_hex": "f4d56f06e1b453cf",
+   "observed": "pass"
+  },
+  {
+   "index": 228,
+   "name": "mix_block_0211",
+   "expected_u64_hex": "f9715cef8d4d81cc",
+   "observed": "pass"
+  },
+  {
+   "index": 229,
+   "name": "mix_block_0212",
+   "expected_u64_hex": "b5731923fd909dc9",
+   "observed": "pass"
+  },
+  {
+   "index": 230,
+   "name": "mix_block_0213",
+   "expected_u64_hex": "9d0fcaeb217ed441",
+   "observed": "pass"
+  },
+  {
+   "index": 231,
+   "name": "mix_block_0214",
+   "expected_u64_hex": "021bdcc388dedd71",
+   "observed": "pass"
+  },
+  {
+   "index": 232,
+   "name": "mix_block_0215",
+   "expected_u64_hex": "faff905af0e5d046",
+   "observed": "pass"
+  },
+  {
+   "index": 233,
+   "name": "mix_block_0216",
+   "expected_u64_hex": "ae13a8158e32abbf",
+   "observed": "pass"
+  },
+  {
+   "index": 234,
+   "name": "mix_block_0217",
+   "expected_u64_hex": "7ca5f6d1864e5b4b",
+   "observed": "pass"
+  },
+  {
+   "index": 235,
+   "name": "mix_block_0218",
+   "expected_u64_hex": "0bf503a8a46f4afe",
+   "observed": "pass"
+  },
+  {
+   "index": 236,
+   "name": "mix_block_0219",
+   "expected_u64_hex": "c5cf9af7af8b441d",
+   "observed": "pass"
+  },
+  {
+   "index": 237,
+   "name": "mix_block_0220",
+   "expected_u64_hex": "63c9e53a228e416c",
+   "observed": "pass"
+  },
+  {
+   "index": 238,
+   "name": "mix_block_0221",
+   "expected_u64_hex": "1ead13658a65a734",
+   "observed": "pass"
+  },
+  {
+   "index": 239,
+   "name": "mix_block_0222",
+   "expected_u64_hex": "e5a63dd2b2d19c0b",
+   "observed": "pass"
+  },
+  {
+   "index": 240,
+   "name": "mix_block_0223",
+   "expected_u64_hex": "6e167ef900709a42",
+   "observed": "pass"
+  },
+  {
+   "index": 241,
+   "name": "mix_block_0224",
+   "expected_u64_hex": "cbe67558222b1da7",
+   "observed": "pass"
+  },
+  {
+   "index": 242,
+   "name": "mix_block_0225",
+   "expected_u64_hex": "4ae6002e944760d2",
+   "observed": "pass"
+  },
+  {
+   "index": 243,
+   "name": "mix_block_0226",
+   "expected_u64_hex": "7960048f3e780aff",
+   "observed": "pass"
+  },
+  {
+   "index": 244,
+   "name": "mix_block_0227",
+   "expected_u64_hex": "7ec1a7f5eeb4150c",
+   "observed": "pass"
+  },
+  {
+   "index": 245,
+   "name": "mix_block_0228",
+   "expected_u64_hex": "72e52aa46044be95",
+   "observed": "pass"
+  },
+  {
+   "index": 246,
+   "name": "mix_block_0229",
+   "expected_u64_hex": "b03f0a53426ae4ae",
+   "observed": "pass"
+  },
+  {
+   "index": 247,
+   "name": "mix_block_0230",
+   "expected_u64_hex": "08c7aa5e01302000",
+   "observed": "pass"
+  },
+  {
+   "index": 248,
+   "name": "mix_block_0231",
+   "expected_u64_hex": "e59ac89c34c79da4",
+   "observed": "pass"
+  },
+  {
+   "index": 249,
+   "name": "mix_block_0232",
+   "expected_u64_hex": "40a614e44d0f9fef",
+   "observed": "pass"
+  },
+  {
+   "index": 250,
+   "name": "mix_block_0233",
+   "expected_u64_hex": "199d993d3366547f",
+   "observed": "pass"
+  },
+  {
+   "index": 251,
+   "name": "mix_block_0234",
+   "expected_u64_hex": "5439da59bac405f2",
+   "observed": "pass"
+  },
+  {
+   "index": 252,
+   "name": "mix_block_0235",
+   "expected_u64_hex": "d5c93d7be46a8252",
+   "observed": "pass"
+  },
+  {
+   "index": 253,
+   "name": "mix_block_0236",
+   "expected_u64_hex": "d0d73415955dfa48",
+   "observed": "pass"
+  },
+  {
+   "index": 254,
+   "name": "mix_block_0237",
+   "expected_u64_hex": "7e2868bb78242119",
+   "observed": "pass"
+  },
+  {
+   "index": 255,
+   "name": "mix_block_0238",
+   "expected_u64_hex": "cda30e10195033fa",
+   "observed": "pass"
+  },
+  {
+   "index": 256,
+   "name": "mix_block_0239",
+   "expected_u64_hex": "8a90f0d67f5e79e1",
+   "observed": "pass"
+  },
+  {
+   "index": 257,
+   "name": "mix_block_0240",
+   "expected_u64_hex": "89a1aaf4f4068cee",
+   "observed": "pass"
+  },
+  {
+   "index": 258,
+   "name": "mix_block_0241",
+   "expected_u64_hex": "207daa5e026d0016",
+   "observed": "pass"
+  },
+  {
+   "index": 259,
+   "name": "mix_block_0242",
+   "expected_u64_hex": "3baa5fb8530bdcc7",
+   "observed": "pass"
+  },
+  {
+   "index": 260,
+   "name": "mix_block_0243",
+   "expected_u64_hex": "f135ba2380228f51",
+   "observed": "pass"
+  },
+  {
+   "index": 261,
+   "name": "mix_block_0244",
+   "expected_u64_hex": "2dbcc3fc55720314",
+   "observed": "pass"
+  },
+  {
+   "index": 262,
+   "name": "mix_block_0245",
+   "expected_u64_hex": "86f91fe7341f6317",
+   "observed": "pass"
+  },
+  {
+   "index": 263,
+   "name": "mix_block_0246",
+   "expected_u64_hex": "526387a2a8b651d2",
+   "observed": "pass"
+  },
+  {
+   "index": 264,
+   "name": "mix_block_0247",
+   "expected_u64_hex": "f75143cd8018f328",
+   "observed": "pass"
+  },
+  {
+   "index": 265,
+   "name": "mix_block_0248",
+   "expected_u64_hex": "6c58f7c78a12af00",
+   "observed": "pass"
+  },
+  {
+   "index": 266,
+   "name": "mix_block_0249",
+   "expected_u64_hex": "1aa733c9e667efb9",
+   "observed": "pass"
+  },
+  {
+   "index": 267,
+   "name": "mix_block_0250",
+   "expected_u64_hex": "3947ec3f59725627",
+   "observed": "pass"
+  },
+  {
+   "index": 268,
+   "name": "mix_block_0251",
+   "expected_u64_hex": "f8ab44e92a1e71fe",
+   "observed": "pass"
+  },
+  {
+   "index": 269,
+   "name": "mix_block_0252",
+   "expected_u64_hex": "a30a68cea36d3222",
+   "observed": "pass"
+  },
+  {
+   "index": 270,
+   "name": "mix_block_0253",
+   "expected_u64_hex": "0ce36443221e4ea4",
+   "observed": "pass"
+  },
+  {
+   "index": 271,
+   "name": "mix_block_0254",
+   "expected_u64_hex": "3e279854621318e5",
+   "observed": "pass"
+  },
+  {
+   "index": 272,
+   "name": "mix_block_0255",
+   "expected_u64_hex": "cbe40c5ef030890b",
+   "observed": "pass"
+  },
+  {
+   "index": 273,
+   "name": "mix_block_0256",
+   "expected_u64_hex": "98e829bca2e4f80f",
+   "observed": "pass"
+  },
+  {
+   "index": 274,
+   "name": "mix_block_0257",
+   "expected_u64_hex": "5f4ee277df8fa85e",
+   "observed": "pass"
+  },
+  {
+   "index": 275,
+   "name": "mix_block_0258",
+   "expected_u64_hex": "b9fc40076da466ee",
+   "observed": "pass"
+  },
+  {
+   "index": 276,
+   "name": "mix_block_0259",
+   "expected_u64_hex": "ef0f2b934a92c426",
+   "observed": "pass"
+  },
+  {
+   "index": 277,
+   "name": "mix_block_0260",
+   "expected_u64_hex": "8cc20e0a77c6ca7d",
+   "observed": "pass"
+  }
+ ]
+}

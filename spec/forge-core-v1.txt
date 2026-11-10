@@ -1,0 +1,50 @@
+FORGE CORE V1
+
+Source grammar (case-sensitive, one declaration per line):
+
+MODULE <identifier>
+TYPE <identifier> = UNSIGNED 64
+FUNCTOR <identifier>
+  ACCEPT UNSIGNED 64 <identifier>
+  ACCEPT UNSIGNED 64 <identifier>
+  RETURN UNSIGNED 64
+  EXECUTE
+    <identifier> TIMES <identifier> INTO RESULT
+  END
+  PROVE
+    RESULT EQUALS <identifier> TIMES <identifier>
+  END
+END
+PROGRAM <identifier>
+  LET <identifier> BE <unsigned-decimal-integer>
+  LET <identifier> BE <unsigned-decimal-integer>
+  INVOKE <functor-identifier> WITH <identifier>, <identifier>
+  ASSERT RESULT EQUALS <unsigned-decimal-integer>
+END
+
+The v1 source profile supports one MODULE, one UNSIGNED 64 TYPE, one
+binary multiplication FUNCTOR, and one PROGRAM. The functor's proof clause
+must match its executable multiplication expression. The program invokes
+the functor once with two previously declared LET bindings and asserts the
+result. This is a deliberately closed, fully checked initial language profile.
+
+Canonical IR v1:
+FORGE-IR 1
+MODULE <module-id>
+FUNC <function-id> <argument-count> <register-count>
+CONST <dst> <signed-integer>
+MOVE <dst> <src>
+ADD <dst> <lhs> <rhs>
+SUB <dst> <lhs> <rhs>
+MUL <dst> <lhs> <rhs>
+RETURN <src>
+ENDFUNC
+ENDMODULE
+
+Canonical encoding: UTF-8, LF, exactly one ASCII space between fields,
+no blank lines, no comments, no trailing spaces, final LF required.
+Integer encoding: decimal, no leading plus, no leading zero except 0,
+no negative zero. V1 arithmetic values are signed 64-bit two's-complement;
+operations use checked overflow and compilation/runtime failure on overflow.
+Function IDs are unique and ascending. V1 has exactly one zero-argument
+entry function with ID 0. Register IDs are zero-based.
